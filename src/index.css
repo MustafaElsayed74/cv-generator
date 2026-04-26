@@ -1,0 +1,345 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Web App UI Colors - Premium Dark Mode */
+  --bg-app: #0f172a; /* Slate 900 */
+  --bg-card: #1e293b; /* Slate 800 */
+  --border-card: rgba(255, 255, 255, 0.1);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6; /* Blue 500 */
+  --accent-hover: #2563eb;
+  
+  /* CV Preview Colors - ATS Friendly / Printable */
+  --cv-bg: #ffffff;
+  --cv-text: #000000;
+  --cv-heading: #111827;
+  --cv-sub: #4b5563;
+  --cv-border: #e5e7eb;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.left-pane {
+  flex: 1;
+  max-width: 50%;
+  overflow-y: auto;
+  padding: 2rem;
+  background: var(--bg-app);
+  border-right: 1px solid var(--border-card);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-card) transparent;
+}
+
+.right-pane {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-card) transparent;
+}
+
+/* Form Styles */
+.form-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-main);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border: 1px solid var(--border-card);
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.item-card {
+  background: rgba(0,0,0,0.15);
+  border: 1px solid var(--border-card);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.remove-btn:hover {
+  opacity: 1;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* CV Preview Container */
+.cv-wrapper {
+  background: var(--cv-bg);
+  color: #000000;
+  width: 210mm; /* A4 Width */
+  min-height: 297mm; /* A4 Height */
+  padding: 15mm; /* Reduced Margin */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  font-family: 'Calibri', 'Arial', sans-serif; /* ATS Friendly Font */
+  font-size: 11pt;
+  line-height: 1.3;
+}
+
+/* ATS Friendly CV Structure */
+.cv-header {
+  text-align: center;
+  margin-bottom: 10pt;
+  border-bottom: 1pt solid #003366;
+  padding-bottom: 5pt;
+}
+
+.cv-name {
+  font-size: 24pt;
+  font-weight: bold;
+  margin-bottom: 3pt;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #003366; /* Blue Title */
+}
+
+.cv-contact {
+  font-size: 10pt;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8pt;
+}
+.cv-contact span::after {
+  content: '|';
+  margin-left: 8pt;
+  color: #000000;
+}
+.cv-contact span:last-child::after {
+  content: '';
+}
+
+.cv-link {
+  color: #003366; /* Blue Links */
+  text-decoration: none;
+}
+.cv-link:hover {
+  text-decoration: underline;
+}
+
+.cv-section {
+  margin-bottom: 10pt;
+}
+
+.cv-section-title {
+  font-size: 13pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-bottom: 1pt solid #003366;
+  margin-bottom: 5pt;
+  padding-bottom: 2pt;
+  color: #003366; /* Blue Headers */
+}
+
+.cv-item {
+  margin-bottom: 6pt;
+}
+
+.cv-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: bold;
+}
+
+.cv-item-sub {
+  display: flex;
+  justify-content: space-between;
+  font-style: italic;
+  font-size: 10pt;
+  margin-bottom: 2pt;
+}
+
+.cv-item-desc {
+  margin-top: 2pt;
+}
+
+.cv-item-desc ul {
+  padding-left: 15pt;
+  margin-top: 2pt;
+}
+
+.cv-item-desc li {
+  margin-bottom: 2pt;
+  list-style-type: disc;
+}
+
+/* Print Action */
+.floating-print {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  z-index: 10;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Print Media Query - CRITICAL FOR ATS/PDF EXPORT */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  
+  body {
+    background: white;
+    height: auto;
+    overflow: visible;
+  }
+  
+  .app-container {
+    display: block;
+    height: auto;
+  }
+  
+  .left-pane,
+  .floating-print {
+    display: none !important;
+  }
+  
+  .right-pane {
+    padding: 0;
+    display: block;
+    background: white;
+  }
+  
+  .cv-wrapper {
+    box-shadow: none;
+    border-radius: 0;
+    width: 100%;
+    min-height: auto;
+    padding: 20mm; /* Browser print handles physical margins usually, but leaving it ensures safe zone */
+    margin: 0;
+  }
+  
+  /* Avoid page breaks inside items */
+  .cv-section,
+  .cv-item {
+    page-break-inside: avoid;
+  }
+}
