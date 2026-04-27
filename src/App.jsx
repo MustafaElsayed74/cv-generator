@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CVForm from './components/CVForm';
 import CVPreview from './components/CVPreview';
-import { Printer, FileText } from 'lucide-react';
+import { Printer, FileText, Upload } from 'lucide-react';
 import { generateDocx } from './utils/exportDocx';
+import { parseCVText } from './utils/parseCV';
+import * as mammoth from 'mammoth';
 import './index.css';
 
 const defaultData = {
@@ -73,6 +75,36 @@ function App() {
     localStorage.setItem('cv-data', JSON.stringify(cvData));
   }, [cvData]);
 
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      const parsedData = parseCVText(result.value);
+      
+      setCvData(prev => ({
+        ...prev,
+        personalInfo: {
+          ...prev.personalInfo,
+          ...parsedData.personalInfo
+        },
+        experience: parsedData.experience.length > 0 ? parsedData.experience : prev.experience,
+        projects: parsedData.projects.length > 0 ? parsedData.projects : prev.projects,
+        education: parsedData.education.length > 0 ? parsedData.education : prev.education,
+        skills: parsedData.skills.length > 0 ? parsedData.skills : prev.skills,
+      }));
+    } catch (error) {
+      console.error("Error parsing DOCX:", error);
+      alert("Failed to parse the DOCX file. Please ensure it is a valid Word Document.");
+    }
+    
+    e.target.value = null;
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -80,6 +112,23 @@ function App() {
   return (
     <div className="app-container">
       <div className="left-pane">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-card)' }}>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-main)' }}>Resume Builder</h2>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Fill in the details below or import an existing DOCX</p>
+          </div>
+          <input 
+            type="file" 
+            accept=".docx" 
+            ref={fileInputRef} 
+            style={{ display: 'none' }} 
+            onChange={handleFileUpload} 
+          />
+          <button className="btn btn-secondary" onClick={() => fileInputRef.current.click()}>
+            <Upload size={18} />
+            Import DOCX
+          </button>
+        </div>
         <CVForm data={cvData} setData={setCvData} />
       </div>
       <div className="right-pane">
