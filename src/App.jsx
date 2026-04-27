@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import CVForm from './components/CVForm';
 import CVPreview from './components/CVPreview';
-import { Printer } from 'lucide-react';
+import { Printer, FileText } from 'lucide-react';
+import { generateDocx } from './utils/exportDocx';
 import './index.css';
 
 const defaultData = {
@@ -82,10 +83,16 @@ function App() {
         <CVForm data={cvData} setData={setCvData} />
       </div>
       <div className="right-pane">
-        <button className="btn floating-print" onClick={handlePrint}>
-          <Printer size={18} />
-          Export as PDF
-        </button>
+        <div className="export-actions">
+          <button className="btn" onClick={handlePrint}>
+            <Printer size={18} />
+            Export as PDF
+          </button>
+          <button className="btn btn-secondary" style={{ background: '#3b82f6', color: 'white', border: 'none' }} onClick={() => generateDocx(cvData)}>
+            <FileText size={18} />
+            Export as DOCX
+          </button>
+        </div>
         <CVPreview data={cvData} />
       </div>
     </div>

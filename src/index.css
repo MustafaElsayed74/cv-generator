@@ -291,11 +291,15 @@ textarea.form-control {
 }
 
 /* Print Action */
-.floating-print {
+.export-actions {
   position: absolute;
   top: 2rem;
   right: 2rem;
   z-index: 10;
+  display: flex;
+  gap: 1rem;
+}
+.export-actions .btn {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
@@ -318,7 +322,7 @@ textarea.form-control {
   }
   
   .left-pane,
-  .floating-print {
+  .export-actions {
     display: none !important;
   }
   
