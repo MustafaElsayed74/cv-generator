@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import CVForm from './components/CVForm';
 import CVPreview from './components/CVPreview';
-import { Printer, FileText, Upload, Save, Clock, LogOut } from 'lucide-react';
+import { Printer, FileText, Upload, Save, Clock } from 'lucide-react';
 import { generateDocx } from './utils/exportDocx';
 import { parseCVText } from './utils/parseCV';
 import { saveCV, getHistory, loadCV } from './utils/blobStorage';
 import * as mammoth from 'mammoth';
+import { SignedIn, SignedOut, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import './index.css';
 
 const defaultData = {
@@ -70,8 +71,9 @@ const defaultData = {
 };
 
 function App() {
-  const [username, setUsername] = useState(() => localStorage.getItem('cv-username') || '');
-  const [tempUsername, setTempUsername] = useState('');
+  const { user } = useUser();
+  const userId = user?.primaryEmailAddress?.emailAddress || user?.id;
+
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -96,18 +98,16 @@ function App() {
   }, [cvData]);
 
   useEffect(() => {
-    if (username) {
-      localStorage.setItem('cv-username', username);
+    if (userId) {
       fetchHistory();
     } else {
-      localStorage.removeItem('cv-username');
       setHistory([]);
     }
-  }, [username]);
+  }, [userId]);
 
   const fetchHistory = async () => {
     try {
-      const data = await getHistory(username);
+      const data = await getHistory(userId);
       setHistory(data);
     } catch (e) {
       console.error("Failed to fetch history:", e);
@@ -115,9 +115,10 @@ function App() {
   };
 
   const handleSaveToCloud = async () => {
+    if (!userId) return;
     setIsSaving(true);
     try {
-      await saveCV(username, cvData);
+      await saveCV(userId, cvData);
       await fetchHistory();
       alert("CV successfully saved to your history!");
     } catch (e) {
@@ -140,27 +141,6 @@ function App() {
       alert("Failed to load CV from cloud.");
     }
   };
-
-  if (!username) {
-    return (
-      <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', background: 'var(--bg-app)', color: 'var(--text-main)' }}>
-        <div style={{ background: 'var(--bg-card)', padding: '3rem', borderRadius: '12px', border: '1px solid var(--border-card)', textAlign: 'center', width: '400px' }}>
-          <h2 style={{ marginBottom: '1rem' }}>Welcome to Resume Builder</h2>
-          <p style={{ marginBottom: '2rem', color: 'var(--text-muted)' }}>Enter your email or a unique username to access and save your resume history.</p>
-          <input 
-            className="form-control" 
-            placeholder="Email or Username" 
-            value={tempUsername} 
-            onChange={(e) => setTempUsername(e.target.value)}
-            style={{ marginBottom: '1rem' }}
-          />
-          <button className="btn" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setUsername(tempUsername)}>
-            Login
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -195,8 +175,16 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      {/* HISTORY MODAL/SIDEBAR */}
+    <>
+      <SignedOut>
+        <div style={{ display: 'flex', height: '100vh', justifyContent: 'center', alignItems: 'center', background: 'var(--bg-app)' }}>
+          <SignIn routing="hash" />
+        </div>
+      </SignedOut>
+      
+      <SignedIn>
+        <div className="app-container">
+          {/* HISTORY MODAL/SIDEBAR */}
       {showHistory && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
           <div style={{ width: '350px', background: 'var(--bg-card)', height: '100%', borderLeft: '1px solid var(--border-card)', padding: '2rem', display: 'flex', flexDirection: 'column' }}>
@@ -224,9 +212,9 @@ function App() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-card)' }}>
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-main)' }}>Resume Builder</h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Logged in as <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{username}</span></p>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Logged in securely</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <input 
               type="file" 
               accept=".docx" 
@@ -244,9 +232,9 @@ function App() {
               <Save size={18} />
               {isSaving ? "..." : ""}
             </button>
-            <button className="btn btn-danger" title="Logout" onClick={() => setUsername('')}>
-              <LogOut size={18} />
-            </button>
+            <div style={{ marginLeft: '0.5rem' }}>
+              <UserButton afterSignOutUrl="/" />
+            </div>
           </div>
         </div>
         <CVForm data={cvData} setData={setCvData} />
@@ -262,9 +250,11 @@ function App() {
             Export as DOCX
           </button>
         </div>
-        <CVPreview data={cvData} />
-      </div>
-    </div>
+          <CVPreview data={cvData} />
+        </div>
+        </div>
+      </SignedIn>
+    </>
   );
 }
 
