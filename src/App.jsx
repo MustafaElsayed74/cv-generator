@@ -380,7 +380,7 @@ function App() {
       </div>
       <div className="right-pane">
         <div className="right-pane-inner">
-          <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1rem', background: 'var(--bg-card)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
+          <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1rem' }}>
             
             <div className="export-actions" style={{ position: 'relative' }}>
               <button className="btn" style={{ background: '#10b981', borderColor: '#10b981' }} onClick={() => setShowExportMenu(!showExportMenu)}>
