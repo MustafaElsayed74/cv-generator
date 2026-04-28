@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import CVForm from './components/CVForm';
 import CVPreview from './components/CVPreview';
-import { Printer, FileText, Upload, Save, Clock, Download, ChevronDown, LayoutTemplate, FilePlus2, ArrowLeft, FileCode2 } from 'lucide-react';
+import { Printer, FileText, Upload, Save, Clock, Download, ChevronDown, LayoutTemplate, FilePlus2, ArrowLeft, FileCode2, Shield } from 'lucide-react';
 import { generateDocx, generateCustomDocx } from './utils/exportDocx';
 import { parseCVText } from './utils/parseCV';
 import { saveCV, getHistory, loadCV } from './utils/blobStorage';
@@ -9,6 +9,7 @@ import * as mammoth from 'mammoth';
 import html2pdf from 'html2pdf.js';
 import { SignedIn, SignedOut, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import toast, { Toaster } from 'react-hot-toast';
+import ATSScoreModal from './components/ATSScoreModal';
 import './index.css';
 
 const emptyData = {
@@ -46,6 +47,7 @@ function App() {
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
   const customTemplateRef = useRef(null);
+  const [showATSModal, setShowATSModal] = useState(false);
 
   const [cvData, setCvData] = useState(() => {
     const saved = localStorage.getItem('cv-data');
@@ -135,6 +137,8 @@ function App() {
         skills: parsedData.skills.length > 0 ? parsedData.skills : prev.skills,
       }));
       toast.success("Resume data imported successfully!");
+      // Auto-trigger ATS score after import
+      setTimeout(() => setShowATSModal(true), 500);
     } catch (error) {
       console.error("Error parsing DOCX:", error);
       toast.error("Failed to parse the DOCX file. Please ensure it is a valid Word Document.");
@@ -396,9 +400,13 @@ function App() {
             <button className="btn btn-secondary" title="View History" onClick={() => setShowHistory(true)}>
               <Clock size={18} />
             </button>
-            <button className="btn" title="Save to History" disabled={isSaving} onClick={handleSaveToCloud}>
+            <button className="btn btn-secondary" title="Save to History" disabled={isSaving} onClick={handleSaveToCloud}>
               <Save size={18} />
               {isSaving ? "..." : ""}
+            </button>
+            <button className="btn" title="ATS Score" onClick={() => setShowATSModal(true)} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderColor: 'transparent' }}>
+              <Shield size={18} />
+              ATS Score
             </button>
             <div style={{ marginLeft: '0.5rem' }}>
               <UserButton afterSignOutUrl="/" />
@@ -443,6 +451,7 @@ function App() {
           )}
         </div>
       </SignedIn>
+      {showATSModal && <ATSScoreModal cvData={cvData} onClose={() => setShowATSModal(false)} />}
       <Toaster 
         position="bottom-right" 
         toastOptions={{
