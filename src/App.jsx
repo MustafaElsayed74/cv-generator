@@ -379,49 +379,51 @@ function App() {
         <CVForm data={cvData} setData={setCvData} />
       </div>
       <div className="right-pane">
-        <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', background: 'var(--bg-card)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-card)', width: '100%', maxWidth: '210mm' }}>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>Template:</span>
-            <select 
-              value={cvData.templateId || 'classic'} 
-              onChange={e => setCvData({ ...cvData, templateId: e.target.value })}
-              className="form-control"
-              style={{ padding: '0.25rem 0.5rem', height: 'auto', width: 'auto', cursor: 'pointer', background: 'var(--bg-app)' }}
-            >
-              <option value="classic">Classic</option>
-              <option value="modern">Modern (Two-Column)</option>
-              <option value="minimal">Minimalist</option>
-              <option value="custom">Custom (DOCX)</option>
-            </select>
+        <div className="right-pane-inner">
+          <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', background: 'var(--bg-card)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>Template:</span>
+              <select 
+                value={cvData.templateId || 'classic'} 
+                onChange={e => setCvData({ ...cvData, templateId: e.target.value })}
+                className="form-control"
+                style={{ padding: '0.25rem 0.5rem', height: 'auto', width: 'auto', cursor: 'pointer', background: 'var(--bg-app)' }}
+              >
+                <option value="classic">Classic</option>
+                <option value="modern">Modern (Two-Column)</option>
+                <option value="minimal">Minimalist</option>
+                <option value="custom">Custom (DOCX)</option>
+              </select>
+            </div>
+            
+            <div className="export-actions" style={{ position: 'relative' }}>
+              <button className="btn" style={{ background: '#10b981', borderColor: '#10b981' }} onClick={() => setShowExportMenu(!showExportMenu)}>
+                <Download size={18} />
+                Export
+                <ChevronDown size={14} />
+              </button>
+              {showExportMenu && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', zIndex: 50, display: 'flex', flexDirection: 'column', minWidth: '180px', overflow: 'hidden' }}>
+                  <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', background: 'transparent' }} onClick={handleExportPDF} disabled={cvData.templateId === 'custom'}>
+                    <Printer size={16} /> Download PDF
+                  </button>
+                  <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', borderTop: '1px solid var(--border-card)', background: 'transparent' }} onClick={() => { 
+                    if (cvData.templateId === 'custom' && cvData.customTemplateBase64) {
+                      generateCustomDocx(cvData);
+                    } else {
+                      generateDocx(cvData); 
+                    }
+                    setShowExportMenu(false); 
+                  }}>
+                    <FileText size={16} /> Download DOCX
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-          
-          <div className="export-actions" style={{ position: 'relative' }}>
-            <button className="btn" style={{ background: '#10b981', borderColor: '#10b981' }} onClick={() => setShowExportMenu(!showExportMenu)}>
-              <Download size={18} />
-              Export
-              <ChevronDown size={14} />
-            </button>
-            {showExportMenu && (
-              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', zIndex: 50, display: 'flex', flexDirection: 'column', minWidth: '180px', overflow: 'hidden' }}>
-                <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', background: 'transparent' }} onClick={handleExportPDF} disabled={cvData.templateId === 'custom'}>
-                  <Printer size={16} /> Download PDF
-                </button>
-                <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', borderTop: '1px solid var(--border-card)', background: 'transparent' }} onClick={() => { 
-                  if (cvData.templateId === 'custom' && cvData.customTemplateBase64) {
-                    generateCustomDocx(cvData);
-                  } else {
-                    generateDocx(cvData); 
-                  }
-                  setShowExportMenu(false); 
-                }}>
-                  <FileText size={16} /> Download DOCX
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
           <CVPreview data={cvData} />
         </div>
+      </div>
             </>
           )}
         </div>
