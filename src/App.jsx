@@ -380,21 +380,7 @@ function App() {
       </div>
       <div className="right-pane">
         <div className="right-pane-inner">
-          <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', background: 'var(--bg-card)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>Template:</span>
-              <select 
-                value={cvData.templateId || 'classic'} 
-                onChange={e => setCvData({ ...cvData, templateId: e.target.value })}
-                className="form-control"
-                style={{ padding: '0.25rem 0.5rem', height: 'auto', width: 'auto', cursor: 'pointer', background: 'var(--bg-app)' }}
-              >
-                <option value="classic">Classic</option>
-                <option value="modern">Modern (Two-Column)</option>
-                <option value="minimal">Minimalist</option>
-                <option value="custom">Custom (DOCX)</option>
-              </select>
-            </div>
+          <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1rem', background: 'var(--bg-card)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
             
             <div className="export-actions" style={{ position: 'relative' }}>
               <button className="btn" style={{ background: '#10b981', borderColor: '#10b981' }} onClick={() => setShowExportMenu(!showExportMenu)}>
