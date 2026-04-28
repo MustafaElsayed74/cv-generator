@@ -63,7 +63,7 @@ export const parseCVText = (text) => {
   const sectionKeywords = {
     experience: ['experience', 'work history', 'employment history', 'professional experience'],
     education: ['education', 'academic background'],
-    projects: ['projects', 'personal projects'],
+    projects: ['projects', 'personal projects', 'key projects'],
     skills: ['skills', 'technologies', 'core competencies', 'technical skills']
   };
 
@@ -95,17 +95,38 @@ export const parseCVText = (text) => {
   if (sectionContent.experience.length > 0) {
     let currentExp = null;
     sectionContent.experience.forEach(line => {
-      // Short lines might be titles or dates, long lines are descriptions
-      if (line.length < 60 && !line.includes('•') && !line.startsWith('-') && !line.toLowerCase().includes('achieved') && !line.toLowerCase().includes('developed')) {
+      const isActionLine = line.match(/^(built|implemented|developed|designed|collaborated|architected|applied|added|secured|documented)/i) || line.includes('•') || line.startsWith('-');
+      const isHeader = (line.includes('\t') && !isActionLine) || (line.length < 120 && !isActionLine);
+
+      if (isHeader) {
         if (currentExp) result.experience.push(currentExp);
         currentExp = {
           id: Date.now().toString() + Math.random().toString(),
-          position: line,
+          position: '',
           company: '',
           date: '',
           location: '',
           description: ''
         };
+
+        let headerText = line;
+        if (line.includes('\t')) {
+           const parts = line.split('\t');
+           headerText = parts[0];
+           currentExp.date = parts[parts.length - 1].trim();
+        }
+        
+        if (headerText.includes('·')) {
+           const parts = headerText.split('·');
+           currentExp.position = parts[0].trim();
+           currentExp.company = parts[1].trim();
+        } else if (headerText.includes(' - ')) {
+           const parts = headerText.split(' - ');
+           currentExp.position = parts[0].trim();
+           currentExp.company = parts[1].trim();
+        } else {
+           currentExp.position = headerText;
+        }
       } else if (currentExp) {
         currentExp.description += (currentExp.description ? '\n' : '') + line.replace(/^[•-]\s*/, '');
       }
@@ -117,16 +138,31 @@ export const parseCVText = (text) => {
   if (sectionContent.education.length > 0) {
     let currentEdu = null;
     sectionContent.education.forEach(line => {
-      if (line.length < 70 && !line.includes('•') && !line.startsWith('-')) {
+      const isHeader = line.includes('|') || line.includes('\t') || (line.length < 80 && !line.includes('•') && !line.startsWith('-'));
+      if (isHeader) {
         if (currentEdu) result.education.push(currentEdu);
         currentEdu = {
            id: Date.now().toString() + Math.random().toString(),
-           degree: line,
+           degree: '',
            institution: '',
            location: ''
         };
+        
+        let headerText = line;
+        if (line.includes('\t')) {
+           const parts = line.split('\t');
+           headerText = parts[0];
+           currentEdu.location = parts[parts.length - 1].trim();
+        }
+        
+        if (headerText.includes('|')) {
+           const parts = headerText.split('|');
+           currentEdu.degree = parts[0].trim();
+           currentEdu.institution = parts[1].trim();
+        } else {
+           currentEdu.degree = headerText;
+        }
       } else if (currentEdu) {
-        // Just append to institution if there's extra info
         currentEdu.institution += (currentEdu.institution ? ', ' : '') + line;
       }
     });
@@ -137,15 +173,30 @@ export const parseCVText = (text) => {
   if (sectionContent.projects.length > 0) {
     let currentProj = null;
     sectionContent.projects.forEach(line => {
-      if (line.length < 50 && !line.includes('•')) {
+      const isActionLine = line.match(/^(built|implemented|developed|designed|collaborated|architected|applied|added|secured|documented)/i) || line.includes('•') || line.startsWith('-');
+      const isHeader = !isActionLine && (line.includes('·') || line.includes('–') || line.includes(' - ') || line.includes(' | ') || line.length < 60);
+
+      if (isHeader) {
         if (currentProj) result.projects.push(currentProj);
         currentProj = {
           id: Date.now().toString() + Math.random().toString(),
-          name: line,
+          name: '',
           type: '',
           link: '',
           description: ''
         };
+
+        if (line.includes(' – ')) {
+          const parts = line.split(' – ');
+          currentProj.name = parts[0].trim();
+          currentProj.type = parts.slice(1).join(' – ').trim();
+        } else if (line.includes(' - ')) {
+          const parts = line.split(' - ');
+          currentProj.name = parts[0].trim();
+          currentProj.type = parts.slice(1).join(' - ').trim();
+        } else {
+          currentProj.name = line;
+        }
       } else if (currentProj) {
         currentProj.description += (currentProj.description ? '\n' : '') + line.replace(/^[•-]\s*/, '');
       }
@@ -155,12 +206,34 @@ export const parseCVText = (text) => {
 
   // Parse Skills
   if (sectionContent.skills.length > 0) {
-    const allSkills = sectionContent.skills.join(', ').replace(/, \s*,/g, ',');
-    result.skills.push({
-      id: Date.now().toString(),
-      category: 'Extracted Skills',
-      items: allSkills
-    });
+    const rawSkillsStr = sectionContent.skills.join('\n').replace('Extracted Skills:', '').trim();
+    const categoryMatches = [...rawSkillsStr.matchAll(/([A-Z][a-zA-Z &()]+):/g)];
+    
+    if (categoryMatches.length > 0) {
+      for (let i = 0; i < categoryMatches.length; i++) {
+        const match = categoryMatches[i];
+        const category = match[1].trim();
+        const startIdx = match.index + match[0].length;
+        const endIdx = (i + 1 < categoryMatches.length) ? categoryMatches[i + 1].index : rawSkillsStr.length;
+        
+        let items = rawSkillsStr.substring(startIdx, endIdx).trim();
+        items = items.replace(/,\s*$/, '');
+        
+        if (category && items) {
+          result.skills.push({
+             id: Date.now().toString() + Math.random().toString(),
+             category: category,
+             items: items
+          });
+        }
+      }
+    } else {
+       result.skills.push({
+           id: Date.now().toString() + Math.random().toString(),
+           category: 'Core Skills',
+           items: rawSkillsStr
+       });
+    }
   }
 
   return result;
