@@ -142,6 +142,10 @@ function App() {
 
   const handleExportPDF = () => {
     const element = document.getElementById('cv-printable');
+    
+    // Temporarily disable CSS zoom so html2pdf captures full resolution A4
+    element.style.zoom = '1';
+    
     const opt = {
       margin:       0,
       filename:     `${cvName.replace(/\s+/g, '_')}.pdf`,
@@ -149,7 +153,9 @@ function App() {
       html2canvas:  { scale: 2 },
       jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set(opt).from(element).save().then(() => {
+      element.style.zoom = ''; // Restore zoom
+    });
     setShowExportMenu(false);
   };
 
@@ -159,16 +165,31 @@ function App() {
     setCurrentView('builder');
   };
 
-  const handleCustomTemplateUpload = (e) => {
+  const handleCustomTemplateUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setCvData({ ...emptyData, templateId: 'custom', customTemplateBase64: event.target.result });
-      setCvName('Custom Template CV');
-      setCurrentView('builder');
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      // Validate that it's actually a template with tags
+      const arrayBuffer = await file.slice().arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      if (!result.value.includes('{') || !result.value.includes('}')) {
+        alert("Warning: This DOCX doesn't contain any template tags (like {fullName}).\n\nIf you are trying to IMPORT your existing resume to edit it, please click a standard template (like Classic), then use the 'Import Resume Data' button inside the editor instead!");
+        e.target.value = null;
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCvData({ ...emptyData, templateId: 'custom', customTemplateBase64: event.target.result });
+        setCvName('Custom Template CV');
+        setCurrentView('builder');
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to parse the uploaded file.");
+    }
     e.target.value = null;
   };
 
@@ -249,8 +270,8 @@ function App() {
              onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
         >
           <FileCode2 size={64} color="var(--accent)" style={{ marginBottom: '1.5rem' }} />
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, textAlign: 'center', marginBottom: '0.5rem', color: 'var(--accent)' }}>Upload Custom Template</h3>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center' }}>Upload a .docx file containing placeholder tags (like {'{fullName}'}) to generate a highly customized resume.</p>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, textAlign: 'center', marginBottom: '0.5rem', color: 'var(--accent)' }}>Upload DOCX Template</h3>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center' }}>Upload a .docx template containing tags (like {'{fullName}'}). Not for importing your own resume.</p>
         </div>
         {[
           { id: 'classic', name: 'Classic', desc: 'Standard, professional ATS-friendly layout' },
@@ -355,15 +376,17 @@ function App() {
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <input 
+              id="import-data-input"
               type="file" 
               accept=".docx" 
               ref={fileInputRef} 
               style={{ display: 'none' }} 
               onChange={handleFileUpload} 
             />
-            <button className="btn btn-secondary" title="Import DOCX" onClick={() => fileInputRef.current.click()}>
+            <label htmlFor="import-data-input" className="btn btn-secondary" style={{ cursor: 'pointer', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
               <Upload size={18} />
-            </button>
+              Import Data
+            </label>
             <button className="btn btn-secondary" title="View History" onClick={() => setShowHistory(true)}>
               <Clock size={18} />
             </button>
