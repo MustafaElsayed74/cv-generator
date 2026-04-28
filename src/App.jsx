@@ -194,7 +194,7 @@ function App() {
   };
 
   const renderDashboard = () => (
-    <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%' }}>
+    <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%', animation: 'fadeIn 0.5s ease-out' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <img src="/logo.png" alt="CV Gen Logo" style={{ height: '48px', objectFit: 'contain' }} />
@@ -248,7 +248,7 @@ function App() {
   );
 
   const renderGallery = () => (
-    <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%' }}>
+    <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%', animation: 'fadeIn 0.5s ease-out' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <button className="btn-secondary" style={{ padding: '0.5rem 1rem' }} onClick={() => setCurrentView('dashboard')}>
           <ArrowLeft size={18} /> Back to Dashboard
@@ -350,8 +350,8 @@ function App() {
         </div>
       )}
 
-      <div className="left-pane">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-card)', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="left-pane" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border-card)', flexWrap: 'wrap', gap: '1rem', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
               <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }} onClick={() => setCurrentView('dashboard')}>
@@ -401,7 +401,7 @@ function App() {
         </div>
         <CVForm data={cvData} setData={setCvData} />
       </div>
-      <div className="right-pane">
+      <div className="right-pane" style={{ animation: 'fadeIn 0.5s ease-out' }}>
         <div className="right-pane-inner">
           <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1rem' }}>
             
