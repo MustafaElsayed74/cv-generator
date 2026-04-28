@@ -55,19 +55,20 @@ body {
   flex: 1;
   overflow: auto;
   padding: 2rem;
-  background: #000;
-  display: block;
+  background: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: relative;
   scrollbar-width: thin;
   scrollbar-color: var(--border-card) transparent;
-  text-align: center;
 }
 
 .right-pane-inner {
-  display: inline-block;
-  text-align: left;
-  width: 210mm;
-  max-width: 100%;
+  width: 100%;
+  max-width: 210mm;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Form Styles */
@@ -209,6 +210,7 @@ textarea.form-control {
   flex-shrink: 0;
   margin: 0 auto;
   text-align: left;
+  zoom: 0.75; /* Scales the CV down so it fits nicely on screen */
 }
 
 /* Base CV Structure */
@@ -419,6 +421,7 @@ textarea.form-control {
     min-height: auto;
     padding: 20mm; /* Browser print handles physical margins usually, but leaving it ensures safe zone */
     margin: 0;
+    zoom: 1;
   }
 
   .template-modern {
