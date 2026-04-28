@@ -75,6 +75,7 @@ function App() {
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [cvData, setCvData] = useState(() => {
     const saved = localStorage.getItem('cv-data');
@@ -160,8 +161,6 @@ function App() {
       </div>
     );
   }
-
-  const fileInputRef = useRef(null);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
