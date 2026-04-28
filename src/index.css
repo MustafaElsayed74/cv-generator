@@ -216,9 +216,9 @@ textarea.form-control {
 /* Base CV Structure */
 .cv-header {
   text-align: center;
-  margin-bottom: 24pt;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 12pt;
+  margin-bottom: 16pt;
+  border-bottom: 1px solid #333;
+  padding-bottom: 8pt;
 }
 
 .cv-name {
@@ -231,18 +231,18 @@ textarea.form-control {
 }
 
 .cv-contact {
-  font-size: 10.5pt; /* Increased from 9pt */
+  font-size: 10.5pt;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12pt;
-  color: #64748b;
-  font-weight: 500;
+  gap: 8pt;
+  color: #333;
+  font-weight: 400;
 }
 .cv-contact span::after {
-  content: '•';
-  margin-left: 12pt;
-  color: #cbd5e1;
+  content: '|';
+  margin-left: 8pt;
+  color: #666;
 }
 .cv-contact span:last-child::after {
   content: '';
