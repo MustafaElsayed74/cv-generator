@@ -120,6 +120,7 @@ export default function CVPreview({ data }) {
       <div className="cv-wrapper template-classic" id="cv-printable">
         <div className="cv-header">
           <h1 className="cv-name">{personalInfo.fullName || 'Full Name'}</h1>
+          {personalInfo.title && <div className="cv-title">{personalInfo.title}</div>}
           <div className="cv-contact">
             {renderContactInfo()}
           </div>
@@ -133,6 +134,7 @@ export default function CVPreview({ data }) {
       <div className="cv-wrapper template-modern" id="cv-printable">
         <div className="modern-sidebar">
           <h1 className="cv-name">{personalInfo.fullName || 'Full Name'}</h1>
+          {personalInfo.title && <div className="cv-title" style={{ color: '#fff' }}>{personalInfo.title}</div>}
           <div className="cv-contact">
             {renderContactInfo()}
           </div>
@@ -148,6 +150,7 @@ export default function CVPreview({ data }) {
           <h1 className="cv-name">
             {personalInfo.fullName || 'Full Name'}
           </h1>
+          {personalInfo.title && <div className="cv-title" style={{ marginBottom: '16pt' }}>{personalInfo.title}</div>}
           <div className="cv-contact" style={{ marginTop: '12pt' }}>
             {renderContactInfo()}
           </div>

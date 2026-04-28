@@ -296,6 +296,10 @@ export default function CVForm({ data, setData }) {
           <label>Full Name</label>
           <input className="form-control" value={data.personalInfo.fullName} onChange={e => updatePersonal('fullName', e.target.value)} />
         </div>
+        <div className="form-group">
+          <label>Professional Title</label>
+          <input className="form-control" value={data.personalInfo.title || ''} onChange={e => updatePersonal('title', e.target.value)} placeholder="e.g. Backend .NET Developer | ASP.NET Core" />
+        </div>
         <div className="grid-2">
           <div className="form-group">
             <label>City</label>

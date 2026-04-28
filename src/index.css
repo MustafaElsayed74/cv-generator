@@ -282,6 +282,13 @@ textarea.form-control {
   color: #0f172a; /* Slate 900 */
 }
 
+.cv-title {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #174d82; /* Professional Deep Blue */
+  margin-bottom: 8pt;
+}
+
 .cv-contact {
   font-size: 10pt;
   display: flex;

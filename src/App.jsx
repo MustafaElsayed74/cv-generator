@@ -17,6 +17,7 @@ const emptyData = {
   customTemplateBase64: null,
   personalInfo: {
     fullName: '',
+    title: '',
     city: '',
     country: '',
     email: '',
