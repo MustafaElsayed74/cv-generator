@@ -1,4 +1,11 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
+import { SortableItem } from './SortableItem';
+
+const MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from({ length: 50 }, (_, i) => (currentYear - i).toString());
 
 export default function CVForm({ data, setData }) {
   const updatePersonal = (field, value) => {
@@ -29,6 +36,255 @@ export default function CVForm({ data, setData }) {
       ...prev,
       [arrayName]: prev[arrayName].filter(item => item.id !== id)
     }));
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event, arrayName) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setData((prev) => {
+        const oldIndex = prev[arrayName].findIndex((item) => item.id === active.id);
+        const newIndex = prev[arrayName].findIndex((item) => item.id === over.id);
+        return {
+          ...prev,
+          [arrayName]: arrayMove(prev[arrayName], oldIndex, newIndex),
+        };
+      });
+    }
+  };
+
+  const handleSectionDragEnd = (event) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setData((prev) => {
+        const oldIndex = prev.sectionOrder.findIndex((s) => s === active.id);
+        const newIndex = prev.sectionOrder.findIndex((s) => s === over.id);
+        return {
+          ...prev,
+          sectionOrder: arrayMove(prev.sectionOrder, oldIndex, newIndex),
+        };
+      });
+    }
+  };
+
+  // Helper renderers for sections
+  const renderExperience = () => (
+    <div className="form-section">
+      <h2>Experience 
+        <button className="btn btn-secondary" onClick={() => addArrayItem('experience', { position:'', company:'', startMonth:'', startYear:'', endMonth:'', endYear:'', isCurrent: false, location:'', description:'' })}>
+          <Plus size={16} /> Add
+        </button>
+      </h2>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'experience')}>
+        <SortableContext items={data.experience.map(e => e.id)} strategy={verticalListSortingStrategy}>
+          {data.experience.map(exp => (
+            <SortableItem key={exp.id} id={exp.id} onRemove={(id) => removeArrayItem('experience', id)}>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Position</label>
+                  <input className="form-control" value={exp.position} onChange={e => updateArrayItem('experience', exp.id, 'position', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Company</label>
+                  <input className="form-control" value={exp.company} onChange={e => updateArrayItem('experience', exp.id, 'company', e.target.value)} />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select className="form-control" value={exp.startMonth || ''} onChange={e => updateArrayItem('experience', exp.id, 'startMonth', e.target.value)}>
+                      <option value="">Month</option>
+                      {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                    <select className="form-control" value={exp.startYear || ''} onChange={e => updateArrayItem('experience', exp.id, 'startYear', e.target.value)}>
+                      <option value="">Year</option>
+                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>End Date</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    {!exp.isCurrent ? (
+                      <>
+                        <select className="form-control" value={exp.endMonth || ''} onChange={e => updateArrayItem('experience', exp.id, 'endMonth', e.target.value)}>
+                          <option value="">Month</option>
+                          {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <select className="form-control" value={exp.endYear || ''} onChange={e => updateArrayItem('experience', exp.id, 'endYear', e.target.value)}>
+                          <option value="">Year</option>
+                          {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                      </>
+                    ) : (
+                      <span style={{ padding: '0.75rem', color: 'var(--text-muted)' }}>Present</span>
+                    )}
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap', marginLeft: 'auto', margin: 0 }}>
+                      <input type="checkbox" checked={exp.isCurrent || false} onChange={e => updateArrayItem('experience', exp.id, 'isCurrent', e.target.checked)} />
+                      Current
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Location</label>
+                <input className="form-control" value={exp.location} onChange={e => updateArrayItem('experience', exp.id, 'location', e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Description (Bullet points, one per line)</label>
+                <textarea className="form-control" value={exp.description} onChange={e => updateArrayItem('experience', exp.id, 'description', e.target.value)} />
+              </div>
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+
+  const renderProjects = () => (
+    <div className="form-section">
+      <h2>Projects
+        <button className="btn btn-secondary" onClick={() => addArrayItem('projects', { name:'', type:'', link:'', description:'' })}>
+          <Plus size={16} /> Add
+        </button>
+      </h2>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'projects')}>
+        <SortableContext items={data.projects.map(p => p.id)} strategy={verticalListSortingStrategy}>
+          {data.projects.map(proj => (
+            <SortableItem key={proj.id} id={proj.id} onRemove={(id) => removeArrayItem('projects', id)}>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Project Name</label>
+                  <input className="form-control" value={proj.name} onChange={e => updateArrayItem('projects', proj.id, 'name', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Project Type</label>
+                  <input className="form-control" value={proj.type} onChange={e => updateArrayItem('projects', proj.id, 'type', e.target.value)} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Link</label>
+                <input className="form-control" value={proj.link} onChange={e => updateArrayItem('projects', proj.id, 'link', e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea className="form-control" style={{minHeight:'60px'}} value={proj.description} onChange={e => updateArrayItem('projects', proj.id, 'description', e.target.value)} />
+              </div>
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+
+  const renderEducation = () => (
+    <div className="form-section">
+      <h2>Education
+        <button className="btn btn-secondary" onClick={() => addArrayItem('education', { degree:'', institution:'', location:'', startMonth:'', startYear:'', endMonth:'', endYear:'', isCurrent: false })}>
+          <Plus size={16} /> Add
+        </button>
+      </h2>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'education')}>
+        <SortableContext items={data.education.map(e => e.id)} strategy={verticalListSortingStrategy}>
+          {data.education.map(edu => (
+            <SortableItem key={edu.id} id={edu.id} onRemove={(id) => removeArrayItem('education', id)}>
+              <div className="form-group">
+                <label>Degree</label>
+                <input className="form-control" value={edu.degree} onChange={e => updateArrayItem('education', edu.id, 'degree', e.target.value)} />
+              </div>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Institution</label>
+                  <input className="form-control" value={edu.institution} onChange={e => updateArrayItem('education', edu.id, 'institution', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Location</label>
+                  <input className="form-control" value={edu.location} onChange={e => updateArrayItem('education', edu.id, 'location', e.target.value)} />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <select className="form-control" value={edu.startMonth || ''} onChange={e => updateArrayItem('education', edu.id, 'startMonth', e.target.value)}>
+                      <option value="">Month</option>
+                      {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                    <select className="form-control" value={edu.startYear || ''} onChange={e => updateArrayItem('education', edu.id, 'startYear', e.target.value)}>
+                      <option value="">Year</option>
+                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>End Date</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    {!edu.isCurrent ? (
+                      <>
+                        <select className="form-control" value={edu.endMonth || ''} onChange={e => updateArrayItem('education', edu.id, 'endMonth', e.target.value)}>
+                          <option value="">Month</option>
+                          {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <select className="form-control" value={edu.endYear || ''} onChange={e => updateArrayItem('education', edu.id, 'endYear', e.target.value)}>
+                          <option value="">Year</option>
+                          {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                      </>
+                    ) : (
+                      <span style={{ padding: '0.75rem', color: 'var(--text-muted)' }}>Present</span>
+                    )}
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap', marginLeft: 'auto', margin: 0 }}>
+                      <input type="checkbox" checked={edu.isCurrent || false} onChange={e => updateArrayItem('education', edu.id, 'isCurrent', e.target.checked)} />
+                      Current
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+
+  const renderSkills = () => (
+    <div className="form-section">
+      <h2>Skills
+        <button className="btn btn-secondary" onClick={() => addArrayItem('skills', { category:'', items:'' })}>
+          <Plus size={16} /> Add
+        </button>
+      </h2>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, 'skills')}>
+        <SortableContext items={data.skills.map(s => s.id)} strategy={verticalListSortingStrategy}>
+          {data.skills.map(skill => (
+            <SortableItem key={skill.id} id={skill.id} onRemove={(id) => removeArrayItem('skills', id)}>
+              <div className="form-group">
+                <label>Category (e.g. Languages)</label>
+                <input className="form-control" value={skill.category} onChange={e => updateArrayItem('skills', skill.id, 'category', e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Items (Comma separated)</label>
+                <input className="form-control" value={skill.items} onChange={e => updateArrayItem('skills', skill.id, 'items', e.target.value)} />
+              </div>
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+
+  const renderers = {
+    experience: renderExperience,
+    projects: renderProjects,
+    education: renderEducation,
+    skills: renderSkills
   };
 
   return (
@@ -72,126 +328,25 @@ export default function CVForm({ data, setData }) {
         </div>
       </div>
 
-      {/* EXPERIENCE */}
       <div className="form-section">
-        <h2>Experience 
-          <button className="btn btn-secondary" onClick={() => addArrayItem('experience', { position:'', company:'', date:'', location:'', description:'' })}>
-            <Plus size={16} /> Add
-          </button>
-        </h2>
-        {data.experience.map(exp => (
-          <div key={exp.id} className="item-card">
-            <button className="remove-btn" onClick={() => removeArrayItem('experience', exp.id)}><Trash2 size={16} /></button>
-            <div className="grid-2">
-              <div className="form-group">
-                <label>Position</label>
-                <input className="form-control" value={exp.position} onChange={e => updateArrayItem('experience', exp.id, 'position', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Company</label>
-                <input className="form-control" value={exp.company} onChange={e => updateArrayItem('experience', exp.id, 'company', e.target.value)} />
-              </div>
-            </div>
-            <div className="grid-2">
-              <div className="form-group">
-                <label>Date (e.g. July 2024 - Present)</label>
-                <input className="form-control" value={exp.date} onChange={e => updateArrayItem('experience', exp.id, 'date', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Location</label>
-                <input className="form-control" value={exp.location} onChange={e => updateArrayItem('experience', exp.id, 'location', e.target.value)} />
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Description (Bullet points, one per line)</label>
-              <textarea className="form-control" value={exp.description} onChange={e => updateArrayItem('experience', exp.id, 'description', e.target.value)} />
-            </div>
-          </div>
-        ))}
+        <h2>Layout Order</h2>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Drag to reorder the main sections of your resume.</p>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
+          <SortableContext items={data.sectionOrder} strategy={verticalListSortingStrategy}>
+            {data.sectionOrder.map(section => (
+              <SortableItem key={section} id={section} onRemove={() => {}}>
+                <span style={{ textTransform: 'capitalize', fontWeight: 600 }}>{section}</span>
+              </SortableItem>
+            ))}
+          </SortableContext>
+        </DndContext>
       </div>
 
-      {/* PROJECTS */}
-      <div className="form-section">
-        <h2>Projects
-          <button className="btn btn-secondary" onClick={() => addArrayItem('projects', { name:'', type:'', link:'', description:'' })}>
-            <Plus size={16} /> Add
-          </button>
-        </h2>
-        {data.projects.map(proj => (
-          <div key={proj.id} className="item-card">
-            <button className="remove-btn" onClick={() => removeArrayItem('projects', proj.id)}><Trash2 size={16} /></button>
-            <div className="grid-2">
-              <div className="form-group">
-                <label>Project Name</label>
-                <input className="form-control" value={proj.name} onChange={e => updateArrayItem('projects', proj.id, 'name', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Project Type</label>
-                <input className="form-control" value={proj.type} onChange={e => updateArrayItem('projects', proj.id, 'type', e.target.value)} />
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Link</label>
-              <input className="form-control" value={proj.link} onChange={e => updateArrayItem('projects', proj.id, 'link', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Description</label>
-              <textarea className="form-control" style={{minHeight:'60px'}} value={proj.description} onChange={e => updateArrayItem('projects', proj.id, 'description', e.target.value)} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* EDUCATION */}
-      <div className="form-section">
-        <h2>Education
-          <button className="btn btn-secondary" onClick={() => addArrayItem('education', { degree:'', institution:'', location:'' })}>
-            <Plus size={16} /> Add
-          </button>
-        </h2>
-        {data.education.map(edu => (
-          <div key={edu.id} className="item-card">
-            <button className="remove-btn" onClick={() => removeArrayItem('education', edu.id)}><Trash2 size={16} /></button>
-            <div className="form-group">
-              <label>Degree</label>
-              <input className="form-control" value={edu.degree} onChange={e => updateArrayItem('education', edu.id, 'degree', e.target.value)} />
-            </div>
-            <div className="grid-2">
-              <div className="form-group">
-                <label>Institution</label>
-                <input className="form-control" value={edu.institution} onChange={e => updateArrayItem('education', edu.id, 'institution', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Location & Year</label>
-                <input className="form-control" value={edu.location} onChange={e => updateArrayItem('education', edu.id, 'location', e.target.value)} placeholder="Country, 2024" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* SKILLS */}
-      <div className="form-section">
-        <h2>Skills
-          <button className="btn btn-secondary" onClick={() => addArrayItem('skills', { category:'', items:'' })}>
-            <Plus size={16} /> Add
-          </button>
-        </h2>
-        {data.skills.map(skill => (
-          <div key={skill.id} className="item-card">
-            <button className="remove-btn" onClick={() => removeArrayItem('skills', skill.id)}><Trash2 size={16} /></button>
-            <div className="form-group">
-              <label>Category (e.g. Languages)</label>
-              <input className="form-control" value={skill.category} onChange={e => updateArrayItem('skills', skill.id, 'category', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Items (Comma separated)</label>
-              <input className="form-control" value={skill.items} onChange={e => updateArrayItem('skills', skill.id, 'items', e.target.value)} />
-            </div>
-          </div>
-        ))}
-      </div>
-
+      {data.sectionOrder.map(section => (
+        <div key={`render-${section}`}>
+          {renderers[section]()}
+        </div>
+      ))}
     </div>
   );
 }
