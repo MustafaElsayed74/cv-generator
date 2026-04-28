@@ -204,8 +204,8 @@ textarea.form-control {
   padding: 20mm; /* Professional Margin */
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
-  font-family: 'Inter', sans-serif; /* Premium modern font */
-  font-size: 10pt;
+  font-family: 'Inter', Arial, sans-serif; /* Premium modern font with ATS fallback */
+  font-size: 11pt; /* Standard ATS body size */
   line-height: 1.5;
   flex-shrink: 0;
   margin: 0 auto;
@@ -222,16 +222,16 @@ textarea.form-control {
 }
 
 .cv-name {
-  font-size: 28pt;
+  font-size: 22pt; /* Reduced from 28pt to balance */
   font-weight: 800;
-  margin-bottom: 8pt;
+  margin-bottom: 6pt;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   color: #0f172a; /* Slate 900 */
 }
 
 .cv-contact {
-  font-size: 9pt;
+  font-size: 10.5pt; /* Increased from 9pt */
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -261,11 +261,11 @@ textarea.form-control {
 }
 
 .cv-section-title {
-  font-size: 14pt;
+  font-size: 13pt; /* Balanced header size */
   font-weight: 700;
   text-transform: uppercase;
   border-bottom: 2px solid #0f172a;
-  margin-bottom: 10pt;
+  margin-bottom: 8pt;
   padding-bottom: 4pt;
   color: #0f172a;
   letter-spacing: 1px;
@@ -281,7 +281,7 @@ textarea.form-control {
   align-items: baseline;
   font-weight: 700;
   color: #0f172a;
-  font-size: 11pt;
+  font-size: 11.5pt;
 }
 
 .cv-item-sub {
@@ -289,7 +289,7 @@ textarea.form-control {
   justify-content: space-between;
   font-weight: 500;
   color: #475569;
-  font-size: 10pt;
+  font-size: 10.5pt;
   margin-bottom: 4pt;
   margin-top: 2pt;
 }
@@ -330,7 +330,7 @@ textarea.form-control {
 .template-modern .cv-name {
   color: white;
   text-align: left;
-  font-size: 24pt;
+  font-size: 20pt; /* Balanced for sidebar */
   margin-bottom: 20px;
   border: none;
   letter-spacing: 1px;
