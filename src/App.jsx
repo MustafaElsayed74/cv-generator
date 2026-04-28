@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import CVForm from './components/CVForm';
 import CVPreview from './components/CVPreview';
-import { Printer, FileText, Upload, Save, Clock, Download, ChevronDown } from 'lucide-react';
+import { Printer, FileText, Upload, Save, Clock, Download, ChevronDown, LayoutTemplate, FilePlus2, ArrowLeft } from 'lucide-react';
 import { generateDocx } from './utils/exportDocx';
 import { parseCVText } from './utils/parseCV';
 import { saveCV, getHistory, loadCV } from './utils/blobStorage';
@@ -10,7 +10,7 @@ import html2pdf from 'html2pdf.js';
 import { SignedIn, SignedOut, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import './index.css';
 
-const defaultData = {
+const emptyData = {
   sectionOrder: ['experience', 'projects', 'education', 'skills'],
   templateId: 'classic',
   personalInfo: {
@@ -32,6 +32,8 @@ function App() {
   const { user } = useUser();
   const userId = user?.primaryEmailAddress?.emailAddress || user?.id;
 
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'gallery', 'builder'
+  
   const [historyData, setHistoryData] = useState({ profiles: {}, allBlobs: [] });
   const [showHistory, setShowHistory] = useState(false);
   const [selectedProfileHistory, setSelectedProfileHistory] = useState(null);
@@ -46,13 +48,13 @@ function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (!parsed.sectionOrder) parsed.sectionOrder = defaultData.sectionOrder;
+        if (!parsed.sectionOrder) parsed.sectionOrder = emptyData.sectionOrder;
         return parsed;
       } catch (e) {
-        return defaultData;
+        return emptyData;
       }
     }
-    return defaultData;
+    return emptyData;
   });
 
   useEffect(() => {
@@ -64,9 +66,10 @@ function App() {
       fetchHistory();
     } else {
       setHistoryData({ profiles: {}, allBlobs: [] });
-      setCvData(defaultData);
+      setCvData(emptyData);
       setCvName('My Resume');
       localStorage.removeItem('cv-data');
+      setCurrentView('dashboard');
     }
   }, [userId]);
 
@@ -97,10 +100,10 @@ function App() {
   const handleLoadFromCloud = async (url) => {
     try {
       const loadedData = await loadCV(url);
-      if (!loadedData.sectionOrder) loadedData.sectionOrder = defaultData.sectionOrder;
+      if (!loadedData.sectionOrder) loadedData.sectionOrder = emptyData.sectionOrder;
       setCvData(loadedData);
+      setCurrentView('builder');
       setShowHistory(false);
-      alert("CV loaded successfully!");
     } catch (e) {
       console.error("Failed to load CV:", e);
       alert("Failed to load CV from cloud.");
@@ -148,6 +151,97 @@ function App() {
     setShowExportMenu(false);
   };
 
+  const handleCreateNew = (templateId) => {
+    setCvData({ ...emptyData, templateId });
+    setCvName('Untitled CV');
+    setCurrentView('builder');
+  };
+
+  const renderDashboard = () => (
+    <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>My Resumes</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Manage and edit your CV profiles</p>
+        </div>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button className="btn" onClick={() => setCurrentView('gallery')} style={{ padding: '0.75rem 1.5rem', fontSize: '1.1rem' }}>
+            <FilePlus2 size={20} /> Create New CV
+          </button>
+          <div style={{ background: 'var(--bg-card)', padding: '0.5rem', borderRadius: '50%', display: 'flex' }}>
+            <UserButton afterSignOutUrl="/" />
+          </div>
+        </div>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
+        {Object.entries(historyData.profiles).length === 0 ? (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem', background: 'var(--bg-card)', borderRadius: '12px', border: '1px dashed var(--border-card)' }}>
+             <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>No resumes yet!</h3>
+             <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Create your first CV to get started.</p>
+             <button className="btn" onClick={() => setCurrentView('gallery')} style={{ margin: '0 auto' }}>
+               <FilePlus2 size={18} /> Create New CV
+             </button>
+          </div>
+        ) : (
+          Object.entries(historyData.profiles).map(([name, blobs]) => (
+            <div key={name} style={{ background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-card)', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }} 
+                 onClick={() => {
+                   const latestBlob = blobs[0];
+                   handleLoadFromCloud(latestBlob.url);
+                   setCvName(name.replace(/_/g, ' '));
+                 }}
+                 onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.3)'; }}
+                 onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              <div style={{ height: '160px', background: 'var(--bg-app)', display: 'flex', justifyContent: 'center', alignItems: 'center', borderBottom: '1px solid var(--border-card)' }}>
+                <LayoutTemplate size={48} color="var(--accent)" opacity={0.5} />
+              </div>
+              <div style={{ padding: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>{name.replace(/_/g, ' ')}</h3>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{blobs.length} Version{blobs.length !== 1 ? 's' : ''} • Last updated {new Date(blobs[0].uploadedAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const renderGallery = () => (
+    <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%' }}>
+      <button className="btn-secondary" style={{ padding: '0.5rem 1rem', marginBottom: '2rem' }} onClick={() => setCurrentView('dashboard')}>
+        <ArrowLeft size={18} /> Back to Dashboard
+      </button>
+      <div style={{ marginBottom: '3rem' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Choose a Template</h1>
+        <p style={{ color: 'var(--text-muted)' }}>Select a design to get started. You can always change it later.</p>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '3rem' }}>
+        {[
+          { id: 'classic', name: 'Classic', desc: 'Standard, professional ATS-friendly layout' },
+          { id: 'modern', name: 'Modern', desc: 'Two-column design with emphasized contact details' },
+          { id: 'minimal', name: 'Minimalist', desc: 'Clean, spacious, typography-focused layout' }
+        ].map(t => (
+          <div key={t.id} style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '1rem', border: '2px solid transparent', cursor: 'pointer', transition: 'border-color 0.2s' }}
+               onClick={() => handleCreateNew(t.id)}
+               onMouseOver={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+               onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
+          >
+            <div style={{ height: '350px', background: '#fff', borderRadius: '8px', marginBottom: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', overflow: 'hidden', position: 'relative' }}>
+               {t.id === 'classic' && <div style={{ padding: '2rem' }}><div style={{ width: '60%', height: '20px', background: '#e2e8f0', marginBottom: '1rem' }} /><div style={{ width: '40%', height: '10px', background: '#cbd5e1', marginBottom: '2rem' }} /><div style={{ width: '100%', height: '2px', background: '#0f172a', marginBottom: '2rem' }} /><div style={{ width: '100%', height: '40px', background: '#f1f5f9', marginBottom: '1rem' }} /></div>}
+               {t.id === 'modern' && <div style={{ display: 'flex', height: '100%' }}><div style={{ flex: '0 0 30%', background: '#f8fafc', padding: '1rem' }}><div style={{ width: '80%', height: '15px', background: '#cbd5e1', marginBottom: '2rem' }} /><div style={{ width: '60%', height: '8px', background: '#e2e8f0', marginBottom: '0.5rem' }} /></div><div style={{ flex: 1, padding: '1rem' }}><div style={{ width: '100%', height: '30px', background: '#f1f5f9', marginBottom: '1rem' }} /></div></div>}
+               {t.id === 'minimal' && <div style={{ padding: '2rem' }}><div style={{ width: '50%', height: '25px', background: '#e2e8f0', margin: '0 auto 1rem auto' }} /><div style={{ width: '30%', height: '8px', background: '#cbd5e1', margin: '0 auto 2rem auto' }} /><div style={{ width: '100%', height: '1px', background: '#e2e8f0', marginBottom: '2rem' }} /></div>}
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, textAlign: 'center', marginBottom: '0.5rem', color: '#0f172a' }}>{t.name}</h3>
+            <p style={{ fontSize: '0.875rem', color: '#64748b', textAlign: 'center' }}>{t.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <SignedOut>
@@ -157,7 +251,11 @@ function App() {
       </SignedOut>
       
       <SignedIn>
-        <div className="app-container">
+        <div className="app-container" style={currentView !== 'builder' ? { display: 'block', height: 'auto', minHeight: '100vh', overflowY: 'auto' } : {}}>
+          {currentView === 'dashboard' && renderDashboard()}
+          {currentView === 'gallery' && renderGallery()}
+          {currentView === 'builder' && (
+            <>
           {/* HISTORY MODAL/SIDEBAR */}
       {showHistory && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
@@ -201,6 +299,9 @@ function App() {
       <div className="left-pane">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-card)', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
+            <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', marginBottom: '1rem', fontSize: '0.8rem' }} onClick={() => setCurrentView('dashboard')}>
+              <ArrowLeft size={14} /> Dashboard
+            </button>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Resume Builder</h2>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Profile:</span>
@@ -275,6 +376,8 @@ function App() {
         </div>
           <CVPreview data={cvData} />
         </div>
+            </>
+          )}
         </div>
       </SignedIn>
     </>
