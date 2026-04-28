@@ -1,32 +1,31 @@
-import { put, list } from '@vercel/blob';
-
-const getOptions = () => ({
-  token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN,
-});
-
 export const saveCV = async (username, cvData) => {
   if (!username) throw new Error("Username is required to save CV.");
   
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `cv_history/${username}/cv_${timestamp}.json`;
-  
-  const blob = new Blob([JSON.stringify(cvData, null, 2)], { type: 'application/json' });
-  
-  const result = await put(filename, blob, {
-    access: 'public',
-    ...getOptions()
+  const response = await fetch('/api/blob', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, data: cvData })
   });
   
-  return result;
+  if (!response.ok) {
+     const errorBody = await response.json().catch(() => ({}));
+     throw new Error(errorBody.error || "Failed to save CV data to cloud");
+  }
+  
+  return response.json();
 };
 
 export const getHistory = async (username) => {
   if (!username) return [];
   
-  const result = await list({
-    prefix: `cv_history/${username}/`,
-    ...getOptions()
-  });
+  const response = await fetch(`/api/blob?username=${encodeURIComponent(username)}`);
+  
+  if (!response.ok) {
+     const errorBody = await response.json().catch(() => ({}));
+     throw new Error(errorBody.error || "Failed to load CV history");
+  }
+  
+  const result = await response.json();
   
   // Sort by uploadedAt descending (newest first)
   return result.blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
@@ -34,6 +33,6 @@ export const getHistory = async (username) => {
 
 export const loadCV = async (url) => {
   const response = await fetch(url);
-  if (!response.ok) throw new Error("Failed to load CV data");
+  if (!response.ok) throw new Error("Failed to download CV file from storage");
   return await response.json();
 };
