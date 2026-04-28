@@ -300,9 +300,7 @@ textarea.form-control {
 
 /* Print Action */
 .export-actions {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
+  position: relative;
   z-index: 10;
   display: flex;
   gap: 1rem;
