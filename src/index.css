@@ -250,7 +250,7 @@ textarea.form-control {
 /* CV Preview Container - Base Premium Styles */
 .cv-wrapper {
   background: var(--cv-bg);
-  color: #334155; /* Slate 700 */
+  color: #334155; /* Slate 700 - Force dark text */
   width: 210mm; /* A4 Width */
   min-height: 297mm; /* A4 Height */
   padding: 20mm; /* Professional Margin */
@@ -263,6 +263,18 @@ textarea.form-control {
   margin: 0 auto;
   text-align: left;
   zoom: 0.75; /* Scales the CV down so it fits nicely on screen */
+}
+
+/* Hard reset: prevent dark theme from bleeding into the CV */
+.cv-wrapper, .cv-wrapper * {
+  color: inherit;
+}
+.cv-wrapper {
+  color: #334155;
+}
+.cv-wrapper h1, .cv-wrapper h2, .cv-wrapper h3 {
+  font-family: 'Inter', Arial, sans-serif;
+  color: #0f172a;
 }
 
 /* Base CV Structure */
@@ -498,4 +510,64 @@ textarea.form-control {
   .cv-item {
     page-break-inside: avoid;
   }
+}
+
+/* React Quill Editor - Dark Mode Styling */
+.quill {
+  margin-top: 0.5rem;
+}
+.ql-toolbar.ql-snow {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card) !important;
+  border-radius: 8px 8px 0 0;
+}
+.ql-container.ql-snow {
+  border: 1px solid var(--border-card) !important;
+  border-top: none !important;
+  border-radius: 0 0 8px 8px;
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-main);
+  min-height: 120px;
+  font-family: 'Inter', sans-serif;
+}
+.ql-editor {
+  min-height: 120px;
+}
+.ql-editor.ql-blank::before {
+  color: var(--text-muted) !important;
+  font-style: normal !important;
+}
+.ql-snow .ql-stroke {
+  stroke: var(--text-main) !important;
+}
+.ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill {
+  fill: var(--text-main) !important;
+}
+.ql-snow .ql-picker {
+  color: var(--text-main) !important;
+}
+.ql-snow .ql-picker-options {
+  background: #1e293b !important;
+  border-color: var(--border-card) !important;
+}
+
+/* Rendered rich text HTML inside CV Preview */
+.cv-wrapper .quill-content p {
+  margin-bottom: 2pt;
+  color: #334155;
+}
+.cv-wrapper .quill-content ul,
+.cv-wrapper .quill-content ol {
+  margin-top: 2pt;
+  margin-bottom: 4pt;
+  padding-left: 16pt;
+  color: #334155;
+}
+.cv-wrapper .quill-content li {
+  margin-bottom: 2pt;
+  color: #334155;
+}
+.cv-wrapper .quill-content strong {
+  font-weight: 700;
+  color: #0f172a;
 }
