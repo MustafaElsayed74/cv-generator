@@ -201,6 +201,8 @@ textarea.form-control {
   font-family: 'Calibri', 'Arial', sans-serif; /* ATS Friendly Font */
   font-size: 11pt;
   line-height: 1.3;
+  flex-shrink: 0;
+  margin: 0 auto;
 }
 
 /* ATS Friendly CV Structure */
