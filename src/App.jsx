@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import CVForm from './components/CVForm';
 import CVPreview from './components/CVPreview';
-import { Printer, FileText, Upload, Save, Clock, Download, ChevronDown, LayoutTemplate, FilePlus2, ArrowLeft } from 'lucide-react';
-import { generateDocx } from './utils/exportDocx';
+import { Printer, FileText, Upload, Save, Clock, Download, ChevronDown, LayoutTemplate, FilePlus2, ArrowLeft, FileCode2 } from 'lucide-react';
+import { generateDocx, generateCustomDocx } from './utils/exportDocx';
 import { parseCVText } from './utils/parseCV';
 import { saveCV, getHistory, loadCV } from './utils/blobStorage';
 import * as mammoth from 'mammoth';
@@ -13,6 +13,7 @@ import './index.css';
 const emptyData = {
   sectionOrder: ['experience', 'projects', 'education', 'skills'],
   templateId: 'classic',
+  customTemplateBase64: null,
   personalInfo: {
     fullName: '',
     city: '',
@@ -42,6 +43,7 @@ function App() {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
+  const customTemplateRef = useRef(null);
 
   const [cvData, setCvData] = useState(() => {
     const saved = localStorage.getItem('cv-data');
@@ -152,17 +154,33 @@ function App() {
   };
 
   const handleCreateNew = (templateId) => {
-    setCvData({ ...emptyData, templateId });
+    setCvData({ ...emptyData, templateId, customTemplateBase64: null });
     setCvName('Untitled CV');
     setCurrentView('builder');
+  };
+
+  const handleCustomTemplateUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setCvData({ ...emptyData, templateId: 'custom', customTemplateBase64: event.target.result });
+      setCvName('Custom Template CV');
+      setCurrentView('builder');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = null;
   };
 
   const renderDashboard = () => (
     <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>My Resumes</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Manage and edit your CV profiles</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <img src="/logo.png" alt="CV Gen Logo" style={{ height: '48px', objectFit: 'contain' }} />
+          <div>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.2rem', lineHeight: 1 }}>My Resumes</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Manage and edit your CV profiles</p>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <button className="btn" onClick={() => setCurrentView('gallery')} style={{ padding: '0.75rem 1.5rem', fontSize: '1.1rem' }}>
@@ -210,15 +228,30 @@ function App() {
 
   const renderGallery = () => (
     <div style={{ padding: '3rem', maxWidth: '1200px', margin: '0 auto', color: 'var(--text-main)', width: '100%' }}>
-      <button className="btn-secondary" style={{ padding: '0.5rem 1rem', marginBottom: '2rem' }} onClick={() => setCurrentView('dashboard')}>
-        <ArrowLeft size={18} /> Back to Dashboard
-      </button>
-      <div style={{ marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Choose a Template</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Select a design to get started. You can always change it later.</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+        <button className="btn-secondary" style={{ padding: '0.5rem 1rem' }} onClick={() => setCurrentView('dashboard')}>
+          <ArrowLeft size={18} /> Back to Dashboard
+        </button>
+      </div>
+      <div style={{ marginBottom: '3rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <img src="/logo.png" alt="CV Gen Logo" style={{ height: '40px', objectFit: 'contain' }} />
+        <div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.2rem', lineHeight: 1 }}>Choose a Template</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Select a design to get started, or upload your own DOCX file.</p>
+        </div>
       </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '3rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '3rem' }}>
+        <input type="file" accept=".docx" ref={customTemplateRef} style={{ display: 'none' }} onChange={handleCustomTemplateUpload} />
+        <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '1rem', border: '2px dashed var(--accent)', cursor: 'pointer', transition: 'background-color 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '400px' }}
+             onClick={() => customTemplateRef.current.click()}
+             onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
+             onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
+          <FileCode2 size={64} color="var(--accent)" style={{ marginBottom: '1.5rem' }} />
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 600, textAlign: 'center', marginBottom: '0.5rem', color: 'var(--accent)' }}>Upload Custom Template</h3>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'center' }}>Upload a .docx file containing placeholder tags (like {'{fullName}'}) to generate a highly customized resume.</p>
+        </div>
         {[
           { id: 'classic', name: 'Classic', desc: 'Standard, professional ATS-friendly layout' },
           { id: 'modern', name: 'Modern', desc: 'Two-column design with emphasized contact details' },
@@ -299,10 +332,15 @@ function App() {
       <div className="left-pane">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-card)', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', marginBottom: '1rem', fontSize: '0.8rem' }} onClick={() => setCurrentView('dashboard')}>
-              <ArrowLeft size={14} /> Dashboard
-            </button>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Resume Builder</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }} onClick={() => setCurrentView('dashboard')}>
+                <ArrowLeft size={14} /> Dashboard
+              </button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <img src="/logo.png" alt="CV Gen Logo" style={{ height: '24px', objectFit: 'contain' }} />
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-main)' }}>Resume Builder</h2>
+            </div>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Profile:</span>
               <input 
@@ -353,6 +391,7 @@ function App() {
               <option value="classic">Classic</option>
               <option value="modern">Modern (Two-Column)</option>
               <option value="minimal">Minimalist</option>
+              <option value="custom">Custom (DOCX)</option>
             </select>
           </div>
           
@@ -364,10 +403,17 @@ function App() {
             </button>
             {showExportMenu && (
               <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem', background: 'var(--bg-card)', border: '1px solid var(--border-card)', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', zIndex: 50, display: 'flex', flexDirection: 'column', minWidth: '180px', overflow: 'hidden' }}>
-                <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', background: 'transparent' }} onClick={handleExportPDF}>
+                <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', background: 'transparent' }} onClick={handleExportPDF} disabled={cvData.templateId === 'custom'}>
                   <Printer size={16} /> Download PDF
                 </button>
-                <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', borderTop: '1px solid var(--border-card)', background: 'transparent' }} onClick={() => { generateDocx(cvData); setShowExportMenu(false); }}>
+                <button className="btn-secondary" style={{ border: 'none', borderRadius: 0, justifyContent: 'flex-start', padding: '0.75rem 1rem', borderTop: '1px solid var(--border-card)', background: 'transparent' }} onClick={() => { 
+                  if (cvData.templateId === 'custom' && cvData.customTemplateBase64) {
+                    generateCustomDocx(cvData);
+                  } else {
+                    generateDocx(cvData); 
+                  }
+                  setShowExportMenu(false); 
+                }}>
                   <FileText size={16} /> Download DOCX
                 </button>
               </div>

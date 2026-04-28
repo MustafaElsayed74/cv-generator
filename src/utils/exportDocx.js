@@ -1,5 +1,7 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
 
 export const generateDocx = async (data) => {
   const { personalInfo, experience, projects, education, skills, sectionOrder = ['experience', 'projects', 'education', 'skills'] } = data;
@@ -241,4 +243,50 @@ export const generateDocx = async (data) => {
   const blob = await Packer.toBlob(doc);
   const fileName = personalInfo.fullName ? `${personalInfo.fullName.replace(/\s+/g, '_')}_CV.docx` : 'CV.docx';
   saveAs(blob, fileName);
+};
+
+export const generateCustomDocx = (cvData) => {
+  if (!cvData.customTemplateBase64) return;
+  
+  try {
+    const base64Data = cvData.customTemplateBase64.split(',')[1] || cvData.customTemplateBase64;
+    const binaryString = window.atob(base64Data);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    const zip = new PizZip(bytes.buffer);
+    const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+    });
+    
+    const dataObj = {
+      ...cvData,
+      ...cvData.personalInfo, 
+      experience: cvData.experience.map(exp => ({
+         ...exp,
+         dateRange: exp.startYear ? `${exp.startMonth ? exp.startMonth+'/' : ''}${exp.startYear} - ${exp.isCurrent ? 'Present' : (exp.endMonth ? exp.endMonth+'/' : '')+exp.endYear}` : (exp.date || '')
+      })),
+      education: cvData.education.map(edu => ({
+         ...edu,
+         dateRange: edu.startYear ? `${edu.startMonth ? edu.startMonth+'/' : ''}${edu.startYear} - ${edu.isCurrent ? 'Present' : (edu.endMonth ? edu.endMonth+'/' : '')+edu.endYear}` : (edu.date || '')
+      }))
+    };
+
+    doc.render(dataObj);
+    
+    const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    
+    const fileName = cvData.personalInfo?.fullName ? `${cvData.personalInfo.fullName.replace(/\s+/g, '_')}_Custom_CV.docx` : 'Custom_CV.docx';
+    saveAs(out, fileName);
+  } catch (error) {
+    console.error("Error generating custom DOCX", error);
+    alert("Failed to generate DOCX from custom template. Please ensure your template tags are correct.");
+  }
 };
