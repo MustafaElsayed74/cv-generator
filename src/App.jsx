@@ -8,6 +8,7 @@ import { saveCV, getHistory, loadCV } from './utils/blobStorage';
 import * as mammoth from 'mammoth';
 import html2pdf from 'html2pdf.js';
 import { SignedIn, SignedOut, SignIn, UserButton, useUser } from "@clerk/clerk-react";
+import toast, { Toaster } from 'react-hot-toast';
 import './index.css';
 
 const emptyData = {
@@ -90,10 +91,10 @@ function App() {
     try {
       await saveCV(userId, cvName, cvData);
       await fetchHistory();
-      alert("CV successfully saved to your history!");
+      toast.success("CV successfully saved to your history!");
     } catch (e) {
       console.error("Failed to save:", e);
-      alert("Failed to save to cloud.");
+      toast.error("Failed to save to cloud.");
     } finally {
       setIsSaving(false);
     }
@@ -108,7 +109,7 @@ function App() {
       setShowHistory(false);
     } catch (e) {
       console.error("Failed to load CV:", e);
-      alert("Failed to load CV from cloud.");
+      toast.error("Failed to load CV from cloud.");
     }
   };
 
@@ -132,9 +133,10 @@ function App() {
         education: parsedData.education.length > 0 ? parsedData.education : prev.education,
         skills: parsedData.skills.length > 0 ? parsedData.skills : prev.skills,
       }));
+      toast.success("Resume data imported successfully!");
     } catch (error) {
       console.error("Error parsing DOCX:", error);
-      alert("Failed to parse the DOCX file. Please ensure it is a valid Word Document.");
+      toast.error("Failed to parse the DOCX file. Please ensure it is a valid Word Document.");
     }
     
     e.target.value = null;
@@ -174,7 +176,10 @@ function App() {
       const arrayBuffer = await file.slice().arrayBuffer();
       const result = await mammoth.extractRawText({ arrayBuffer });
       if (!result.value.includes('{') || !result.value.includes('}')) {
-        alert("Warning: This DOCX doesn't contain any template tags (like {fullName}).\n\nIf you are trying to IMPORT your existing resume to edit it, please click a standard template (like Classic), then use the 'Import Resume Data' button inside the editor instead!");
+        toast.error(
+          "Warning: This DOCX doesn't contain any template tags (like {fullName}).\n\nIf you are trying to IMPORT your existing resume, please use the 'Import Data' button inside the editor instead!",
+          { duration: 6000 }
+        );
         e.target.value = null;
         return;
       }
@@ -188,7 +193,7 @@ function App() {
       reader.readAsDataURL(file);
     } catch (err) {
       console.error(err);
-      alert("Failed to parse the uploaded file.");
+      toast.error("Failed to parse the uploaded file.");
     }
     e.target.value = null;
   };
@@ -437,6 +442,18 @@ function App() {
           )}
         </div>
       </SignedIn>
+      <Toaster 
+        position="bottom-right" 
+        toastOptions={{
+          style: {
+            background: 'rgba(30, 41, 59, 0.95)',
+            color: '#f8fafc',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+          }
+        }} 
+      />
     </>
   );
 }
