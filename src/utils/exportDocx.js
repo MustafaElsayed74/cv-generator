@@ -18,6 +18,68 @@ export const generateDocx = async (data) => {
     return `${start} - ${end}`;
   };
 
+  const parseHtmlToDocxParagraphs = (htmlString) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString || '', 'text/html');
+    const paragraphs = [];
+
+    const processNode = (node, isBullet = false) => {
+      let runs = [];
+      node.childNodes.forEach(child => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          if (child.textContent.trim() !== '') {
+            runs.push(new TextRun({ text: child.textContent }));
+          }
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          const tagName = child.tagName.toLowerCase();
+          if (tagName === 'strong' || tagName === 'b') {
+            runs.push(new TextRun({ text: child.textContent, bold: true }));
+          } else if (tagName === 'em' || tagName === 'i') {
+            runs.push(new TextRun({ text: child.textContent, italics: true }));
+          } else if (tagName === 'u') {
+            runs.push(new TextRun({ text: child.textContent, underline: {} }));
+          } else if (tagName === 'strike' || tagName === 's') {
+            runs.push(new TextRun({ text: child.textContent, strike: true }));
+          } else if (tagName === 'br') {
+            runs.push(new TextRun({ text: '\n' }));
+          } else {
+            // For nested unsupported tags, just output their text
+            if (child.textContent.trim() !== '') {
+               runs.push(new TextRun({ text: child.textContent }));
+            }
+          }
+        }
+      });
+      
+      if (runs.length > 0) {
+        paragraphs.push(new Paragraph({
+          children: runs,
+          bullet: isBullet ? { level: 0 } : undefined,
+          spacing: { after: 50 }
+        }));
+      }
+    };
+
+    doc.body.childNodes.forEach(node => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const tagName = node.tagName.toLowerCase();
+        if (tagName === 'p' || tagName === 'blockquote' || tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'pre') {
+           processNode(node, false);
+        } else if (tagName === 'ul' || tagName === 'ol') {
+           node.childNodes.forEach(li => {
+             if (li.nodeType === Node.ELEMENT_NODE && li.tagName.toLowerCase() === 'li') {
+               processNode(li, true);
+             }
+           });
+        }
+      } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '') {
+        paragraphs.push(new Paragraph({ text: node.textContent.trim(), spacing: { after: 50 } }));
+      }
+    });
+
+    return paragraphs;
+  };
+
   // Personal Info
   children.push(
     new Paragraph({
@@ -103,19 +165,8 @@ export const generateDocx = async (data) => {
           })
         );
         if (exp.description) {
-          exp.description.split('\n').filter(line => line.trim() !== '').forEach(line => {
-            children.push(
-              new Paragraph({
-                text: line,
-                bullet: {
-                  level: 0
-                },
-                spacing: {
-                  after: 50,
-                }
-              })
-            );
-          });
+          const htmlParagraphs = parseHtmlToDocxParagraphs(exp.description);
+          htmlParagraphs.forEach(p => children.push(p));
         }
         children.push(new Paragraph({ text: "", spacing: { after: 100 } }));
       });
@@ -135,19 +186,8 @@ export const generateDocx = async (data) => {
           })
         );
         if (proj.description) {
-          proj.description.split('\n').filter(line => line.trim() !== '').forEach(line => {
-            children.push(
-              new Paragraph({
-                text: line,
-                bullet: {
-                  level: 0
-                },
-                spacing: {
-                  after: 50,
-                }
-              })
-            );
-          });
+          const htmlParagraphs = parseHtmlToDocxParagraphs(proj.description);
+          htmlParagraphs.forEach(p => children.push(p));
         }
         children.push(new Paragraph({ text: "", spacing: { after: 100 } }));
       });

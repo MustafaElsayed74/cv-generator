@@ -2,6 +2,8 @@ import { Plus, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
 const currentYear = new Date().getFullYear();
@@ -13,6 +15,16 @@ export default function CVForm({ data, setData }) {
       ...prev,
       personalInfo: { ...prev.personalInfo, [field]: value }
     }));
+  };
+
+  const quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }],
+      ['clean']
+    ]
   };
 
   const updateArrayItem = (arrayName, id, field, value) => {
@@ -138,8 +150,14 @@ export default function CVForm({ data, setData }) {
                 <input className="form-control" value={exp.location} onChange={e => updateArrayItem('experience', exp.id, 'location', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Description (Bullet points, one per line)</label>
-                <textarea className="form-control" value={exp.description} onChange={e => updateArrayItem('experience', exp.id, 'description', e.target.value)} />
+                <label>Description</label>
+                <ReactQuill 
+                  theme="snow" 
+                  value={exp.description} 
+                  onChange={content => updateArrayItem('experience', exp.id, 'description', content)}
+                  modules={quillModules}
+                  placeholder="Press Enter to send or Shift+Enter for a new line"
+                />
               </div>
             </SortableItem>
           ))}
@@ -175,7 +193,13 @@ export default function CVForm({ data, setData }) {
               </div>
               <div className="form-group">
                 <label>Description</label>
-                <textarea className="form-control" style={{minHeight:'60px'}} value={proj.description} onChange={e => updateArrayItem('projects', proj.id, 'description', e.target.value)} />
+                <ReactQuill 
+                  theme="snow" 
+                  value={proj.description} 
+                  onChange={content => updateArrayItem('projects', proj.id, 'description', content)}
+                  modules={quillModules}
+                  placeholder="Press Enter to send or Shift+Enter for a new line"
+                />
               </div>
             </SortableItem>
           ))}

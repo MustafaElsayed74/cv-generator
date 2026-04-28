@@ -33,15 +33,7 @@ export default function CVPreview({ data }) {
                 <span></span>
                 <span>{exp.location}</span>
               </div>
-              <div className="cv-item-desc">
-                {exp.description && (
-                  <ul>
-                    {exp.description.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
-                      <li key={idx}>{line}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <div className="cv-item-desc quill-content" dangerouslySetInnerHTML={{ __html: exp.description || '' }} />
             </div>
           ))}
         </div>
@@ -57,15 +49,7 @@ export default function CVPreview({ data }) {
                 <span>{proj.name} {proj.type && `- ${proj.type}`}</span>
                 {proj.link && <span><a href={`https://${formatLink(proj.link)}`} target="_blank" rel="noreferrer" className="cv-link">{formatLink(proj.link)}</a></span>}
               </div>
-              <div className="cv-item-desc">
-                {proj.description && (
-                  <ul>
-                    {proj.description.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
-                      <li key={idx}>{line}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <div className="cv-item-desc quill-content" dangerouslySetInnerHTML={{ __html: proj.description || '' }} />
             </div>
           ))}
         </div>
