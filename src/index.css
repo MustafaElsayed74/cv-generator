@@ -283,21 +283,27 @@ textarea.form-control {
 }
 
 .cv-contact {
-  font-size: 10.5pt;
+  font-size: 10pt;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8pt;
   color: #333;
   font-weight: 400;
+  line-height: 1.6;
+}
+.cv-contact span {
+  display: inline-flex;
+  align-items: center;
 }
 .cv-contact span::after {
   content: '|';
-  margin-left: 8pt;
+  margin: 0 10pt;
   color: #666;
+  font-weight: 300;
 }
 .cv-contact span:last-child::after {
   content: '';
+  margin: 0;
 }
 
 .cv-link {

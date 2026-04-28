@@ -105,11 +105,11 @@ export default function CVPreview({ data }) {
 
   const renderContactInfo = () => (
     <>
-      {personalInfo.city && personalInfo.country && (
-        <span>{personalInfo.city}, {personalInfo.country}</span>
-      )}
       {personalInfo.email && <span><a href={`mailto:${personalInfo.email}`} className="cv-link">{personalInfo.email}</a></span>}
       {personalInfo.phone && <span><a href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`} className="cv-link">{personalInfo.phone}</a></span>}
+      {(personalInfo.city || personalInfo.country) && (
+        <span>{[personalInfo.city, personalInfo.country].filter(Boolean).join(', ')}</span>
+      )}
       {personalInfo.linkedin && <span><a href={`https://${formatLink(personalInfo.linkedin)}`} target="_blank" rel="noreferrer" className="cv-link">{formatLink(personalInfo.linkedin)}</a></span>}
       {personalInfo.portfolio && <span><a href={`https://${formatLink(personalInfo.portfolio)}`} target="_blank" rel="noreferrer" className="cv-link">{formatLink(personalInfo.portfolio)}</a></span>}
     </>
