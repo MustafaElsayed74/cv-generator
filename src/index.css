@@ -552,9 +552,16 @@ textarea.form-control {
 }
 
 /* Rendered rich text HTML inside CV Preview */
+.cv-wrapper .quill-content {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
 .cv-wrapper .quill-content p {
   margin-bottom: 2pt;
   color: #334155;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 .cv-wrapper .quill-content ul,
 .cv-wrapper .quill-content ol {
