@@ -379,7 +379,7 @@ function App() {
         <CVForm data={cvData} setData={setCvData} />
       </div>
       <div className="right-pane">
-        <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', background: 'var(--bg-card)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
+        <div className="right-pane-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', background: 'var(--bg-card)', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--border-card)', width: '100%', maxWidth: '210mm' }}>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>Template:</span>
             <select 

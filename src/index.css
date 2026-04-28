@@ -57,8 +57,9 @@ body {
   padding: 2rem;
   background: #000;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   position: relative;
   scrollbar-width: thin;
   scrollbar-color: var(--border-card) transparent;
