@@ -194,57 +194,60 @@ textarea.form-control {
   gap: 1rem;
 }
 
-/* CV Preview Container */
+/* CV Preview Container - Base Premium Styles */
 .cv-wrapper {
   background: var(--cv-bg);
-  color: #000000;
+  color: #334155; /* Slate 700 */
   width: 210mm; /* A4 Width */
   min-height: 297mm; /* A4 Height */
-  padding: 15mm; /* Reduced Margin */
+  padding: 20mm; /* Professional Margin */
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
   border-radius: 4px;
-  font-family: 'Calibri', 'Arial', sans-serif; /* ATS Friendly Font */
-  font-size: 11pt;
-  line-height: 1.3;
+  font-family: 'Inter', sans-serif; /* Premium modern font */
+  font-size: 10pt;
+  line-height: 1.5;
   flex-shrink: 0;
   margin: 0 auto;
+  text-align: left;
 }
 
-/* ATS Friendly CV Structure */
+/* Base CV Structure */
 .cv-header {
   text-align: center;
-  margin-bottom: 10pt;
-  border-bottom: 1pt solid #003366;
-  padding-bottom: 5pt;
+  margin-bottom: 24pt;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12pt;
 }
 
 .cv-name {
-  font-size: 24pt;
-  font-weight: bold;
-  margin-bottom: 3pt;
+  font-size: 28pt;
+  font-weight: 800;
+  margin-bottom: 8pt;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #003366; /* Blue Title */
+  letter-spacing: 2px;
+  color: #0f172a; /* Slate 900 */
 }
 
 .cv-contact {
-  font-size: 10pt;
+  font-size: 9pt;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8pt;
+  gap: 12pt;
+  color: #64748b;
+  font-weight: 500;
 }
 .cv-contact span::after {
-  content: '|';
-  margin-left: 8pt;
-  color: #000000;
+  content: '•';
+  margin-left: 12pt;
+  color: #cbd5e1;
 }
 .cv-contact span:last-child::after {
   content: '';
 }
 
 .cv-link {
-  color: #003366; /* Blue Links */
+  color: #2563eb;
   text-decoration: none;
 }
 .cv-link:hover {
@@ -252,50 +255,120 @@ textarea.form-control {
 }
 
 .cv-section {
-  margin-bottom: 10pt;
+  margin-bottom: 16pt;
 }
 
 .cv-section-title {
-  font-size: 13pt;
-  font-weight: bold;
+  font-size: 14pt;
+  font-weight: 700;
   text-transform: uppercase;
-  border-bottom: 1pt solid #003366;
-  margin-bottom: 5pt;
-  padding-bottom: 2pt;
-  color: #003366; /* Blue Headers */
+  border-bottom: 2px solid #0f172a;
+  margin-bottom: 10pt;
+  padding-bottom: 4pt;
+  color: #0f172a;
+  letter-spacing: 1px;
 }
 
 .cv-item {
-  margin-bottom: 6pt;
+  margin-bottom: 12pt;
 }
 
 .cv-item-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-weight: bold;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 11pt;
 }
 
 .cv-item-sub {
   display: flex;
   justify-content: space-between;
-  font-style: italic;
+  font-weight: 500;
+  color: #475569;
   font-size: 10pt;
-  margin-bottom: 2pt;
+  margin-bottom: 4pt;
+  margin-top: 2pt;
 }
 
 .cv-item-desc {
-  margin-top: 2pt;
+  margin-top: 4pt;
+  color: #475569;
 }
 
 .cv-item-desc ul {
-  padding-left: 15pt;
-  margin-top: 2pt;
+  padding-left: 16pt;
+  margin-top: 4pt;
 }
 
 .cv-item-desc li {
-  margin-bottom: 2pt;
+  margin-bottom: 4pt;
   list-style-type: disc;
+}
+
+/* TEMPLATE OVERRIDES: Modern Two-Column */
+.template-modern {
+  padding: 0;
+  display: flex;
+  gap: 0;
+}
+.template-modern .modern-sidebar {
+  flex: 0 0 240px;
+  background: #0f172a; /* Sleek dark sidebar */
+  color: #f1f5f9;
+  padding: 30px;
+  min-height: 297mm; /* Full A4 height */
+}
+.template-modern .modern-main {
+  flex: 1;
+  padding: 30px;
+  background: white;
+}
+.template-modern .cv-name {
+  color: white;
+  text-align: left;
+  font-size: 24pt;
+  margin-bottom: 20px;
+  border: none;
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+.template-modern .cv-contact {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  color: #94a3b8;
+}
+.template-modern .cv-contact span::after { display: none; }
+.template-modern .cv-link { color: #60a5fa; }
+.template-modern .cv-section-title {
+  border-bottom: 2px solid #e2e8f0;
+  color: #2563eb; /* Vibrant accent color */
+}
+
+/* TEMPLATE OVERRIDES: Minimalist */
+.template-minimal {
+  font-family: 'Inter', sans-serif;
+  color: #475569;
+}
+.template-minimal .cv-name {
+  font-weight: 300;
+  letter-spacing: 5px;
+  color: #000;
+}
+.template-minimal .cv-section-title {
+  border: none;
+  color: #64748b;
+  font-weight: 400;
+  font-size: 11pt;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 12pt;
+}
+.template-minimal .cv-item-header {
+  font-weight: 600;
+  color: #1e293b;
 }
 
 /* Print Action */
@@ -328,7 +401,8 @@ textarea.form-control {
   }
   
   .left-pane,
-  .export-actions {
+  .export-actions,
+  .right-pane-header {
     display: none !important;
   }
   
@@ -345,6 +419,10 @@ textarea.form-control {
     min-height: auto;
     padding: 20mm; /* Browser print handles physical margins usually, but leaving it ensures safe zone */
     margin: 0;
+  }
+
+  .template-modern {
+    padding: 0;
   }
   
   /* Avoid page breaks inside items */

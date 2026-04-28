@@ -124,31 +124,31 @@ export default function CVPreview({ data }) {
             {renderContactInfo()}
           </div>
         </div>
-        {sectionOrder.map(section => renderers[section] && renderers[section]())}
+        <div className="cv-content">
+          {sectionOrder.map(section => renderers[section] && renderers[section]())}
+        </div>
       </div>
     ),
     modern: (
-      <div className="cv-wrapper template-modern" id="cv-printable" style={{ display: 'flex', gap: '2rem' }}>
-        <div style={{ flex: '0 0 220px', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div>
-            <h1 style={{ fontSize: '20pt', fontWeight: 'bold', color: '#0f172a', lineHeight: '1.2' }}>{personalInfo.fullName || 'Full Name'}</h1>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '9pt', color: '#475569', wordBreak: 'break-word' }}>
+      <div className="cv-wrapper template-modern" id="cv-printable">
+        <div className="modern-sidebar">
+          <h1 className="cv-name">{personalInfo.fullName || 'Full Name'}</h1>
+          <div className="cv-contact">
             {renderContactInfo()}
           </div>
         </div>
-        <div style={{ flex: '1', paddingTop: '1rem' }}>
+        <div className="modern-main">
           {sectionOrder.map(section => renderers[section] && renderers[section]())}
         </div>
       </div>
     ),
     minimal: (
-      <div className="cv-wrapper template-minimal" id="cv-printable" style={{ fontFamily: 'system-ui, sans-serif' }}>
-        <div style={{ textAlign: 'left', marginBottom: '2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: '24pt', fontWeight: '300', letterSpacing: '2px', textTransform: 'uppercase', color: '#0f172a' }}>
+      <div className="cv-wrapper template-minimal" id="cv-printable">
+        <div style={{ textAlign: 'center', marginBottom: '30pt', paddingBottom: '20pt' }}>
+          <h1 className="cv-name">
             {personalInfo.fullName || 'Full Name'}
           </h1>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '9pt', color: '#64748b', marginTop: '1rem' }}>
+          <div className="cv-contact" style={{ marginTop: '12pt' }}>
             {renderContactInfo()}
           </div>
         </div>
