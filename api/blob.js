@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     if (!username) return res.status(400).json({ error: "Missing username parameter." });
     
     try {
-      const result = await list({ prefix: `cv_history/${username}/`, token });
+      const result = await list({ prefix: `cv_profiles/${username}/`, token });
       return res.status(200).json(result);
     } catch (e) {
       return res.status(500).json({ error: e.message });
@@ -20,12 +20,13 @@ export default async function handler(req, res) {
   }
   
   if (req.method === 'POST') {
-    const { username, data } = req.body;
+    const { username, cvName, data } = req.body;
     if (!username || !data) return res.status(400).json({ error: "Missing username or data payload." });
     
     try {
+      const safeCvName = (cvName || "My Resume").replace(/[^a-zA-Z0-9 -]/g, '').trim() || "My_Resume";
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const filename = `cv_history/${username}/cv_${timestamp}.json`;
+      const filename = `cv_profiles/${username}/${safeCvName}/${timestamp}.json`;
       
       const result = await put(filename, JSON.stringify(data), {
         access: 'public',

@@ -1,10 +1,10 @@
-export const saveCV = async (username, cvData) => {
+export const saveCV = async (username, cvName, cvData) => {
   if (!username) throw new Error("Username is required to save CV.");
   
   const response = await fetch('/api/blob', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, data: cvData })
+    body: JSON.stringify({ username, cvName, data: cvData })
   });
   
   if (!response.ok) {
@@ -28,7 +28,23 @@ export const getHistory = async (username) => {
   const result = await response.json();
   
   // Sort by uploadedAt descending (newest first)
-  return result.blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+  const sortedBlobs = result.blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+  
+  // Extract profiles
+  const profiles = {};
+  sortedBlobs.forEach(blob => {
+    // Expected path: cv_profiles/{username}/{cvName}/{timestamp}.json
+    const parts = blob.pathname.split('/');
+    if (parts.length >= 4) {
+      const cvName = parts[2];
+      if (!profiles[cvName]) {
+        profiles[cvName] = [];
+      }
+      profiles[cvName].push(blob);
+    }
+  });
+
+  return { profiles, allBlobs: sortedBlobs };
 };
 
 export const loadCV = async (url) => {

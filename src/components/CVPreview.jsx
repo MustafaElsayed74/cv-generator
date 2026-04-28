@@ -1,5 +1,5 @@
 export default function CVPreview({ data }) {
-  const { personalInfo, experience, projects, education, skills, sectionOrder = ['experience', 'projects', 'education', 'skills'] } = data;
+  const { personalInfo, experience, projects, education, skills, sectionOrder = ['experience', 'projects', 'education', 'skills'], templateId = 'classic' } = data;
 
   const formatLink = (url) => {
     if (!url) return '';
@@ -9,14 +9,11 @@ export default function CVPreview({ data }) {
   };
 
   const formatDates = (item) => {
-    if (item.date && !item.startYear) return item.date; // Support old/unstructured data
+    if (item.date && !item.startYear) return item.date;
     if (!item.startYear) return '';
-    
-    // Simple month name map if we want to look nicer, or just use the number
     const getMonthStr = (m) => m ? m + '/' : '';
     const start = `${getMonthStr(item.startMonth)}${item.startYear}`;
     const end = item.isCurrent ? 'Present' : `${getMonthStr(item.endMonth)}${item.endYear}`;
-    
     if (!item.endYear && !item.isCurrent) return start;
     return `${start} - ${end}`;
   };
@@ -106,22 +103,61 @@ export default function CVPreview({ data }) {
     )
   };
 
-  return (
-    <div className="cv-wrapper" id="cv-printable">
-      <div className="cv-header">
-        <h1 className="cv-name">{personalInfo.fullName || 'Full Name'}</h1>
-        <div className="cv-contact">
-          {personalInfo.city && personalInfo.country && (
-            <span>{personalInfo.city}, {personalInfo.country}</span>
-          )}
-          {personalInfo.email && <span><a href={`mailto:${personalInfo.email}`} className="cv-link">{personalInfo.email}</a></span>}
-          {personalInfo.phone && <span><a href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`} className="cv-link">{personalInfo.phone}</a></span>}
-          {personalInfo.linkedin && <span><a href={`https://${formatLink(personalInfo.linkedin)}`} target="_blank" rel="noreferrer" className="cv-link">{formatLink(personalInfo.linkedin)}</a></span>}
-          {personalInfo.portfolio && <span><a href={`https://${formatLink(personalInfo.portfolio)}`} target="_blank" rel="noreferrer" className="cv-link">{formatLink(personalInfo.portfolio)}</a></span>}
+  const renderContactInfo = () => (
+    <>
+      {personalInfo.city && personalInfo.country && (
+        <span>{personalInfo.city}, {personalInfo.country}</span>
+      )}
+      {personalInfo.email && <span><a href={`mailto:${personalInfo.email}`} className="cv-link">{personalInfo.email}</a></span>}
+      {personalInfo.phone && <span><a href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`} className="cv-link">{personalInfo.phone}</a></span>}
+      {personalInfo.linkedin && <span><a href={`https://${formatLink(personalInfo.linkedin)}`} target="_blank" rel="noreferrer" className="cv-link">{formatLink(personalInfo.linkedin)}</a></span>}
+      {personalInfo.portfolio && <span><a href={`https://${formatLink(personalInfo.portfolio)}`} target="_blank" rel="noreferrer" className="cv-link">{formatLink(personalInfo.portfolio)}</a></span>}
+    </>
+  );
+
+  const templates = {
+    classic: (
+      <div className="cv-wrapper template-classic" id="cv-printable">
+        <div className="cv-header">
+          <h1 className="cv-name">{personalInfo.fullName || 'Full Name'}</h1>
+          <div className="cv-contact">
+            {renderContactInfo()}
+          </div>
+        </div>
+        {sectionOrder.map(section => renderers[section] && renderers[section]())}
+      </div>
+    ),
+    modern: (
+      <div className="cv-wrapper template-modern" id="cv-printable" style={{ display: 'flex', gap: '2rem' }}>
+        <div style={{ flex: '0 0 220px', background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div>
+            <h1 style={{ fontSize: '20pt', fontWeight: 'bold', color: '#0f172a', lineHeight: '1.2' }}>{personalInfo.fullName || 'Full Name'}</h1>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '9pt', color: '#475569', wordBreak: 'break-word' }}>
+            {renderContactInfo()}
+          </div>
+        </div>
+        <div style={{ flex: '1', paddingTop: '1rem' }}>
+          {sectionOrder.map(section => renderers[section] && renderers[section]())}
         </div>
       </div>
+    ),
+    minimal: (
+      <div className="cv-wrapper template-minimal" id="cv-printable" style={{ fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ textAlign: 'left', marginBottom: '2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1.5rem' }}>
+          <h1 style={{ fontSize: '24pt', fontWeight: '300', letterSpacing: '2px', textTransform: 'uppercase', color: '#0f172a' }}>
+            {personalInfo.fullName || 'Full Name'}
+          </h1>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '9pt', color: '#64748b', marginTop: '1rem' }}>
+            {renderContactInfo()}
+          </div>
+        </div>
+        <div className="minimal-content">
+          {sectionOrder.map(section => renderers[section] && renderers[section]())}
+        </div>
+      </div>
+    )
+  };
 
-      {sectionOrder.map(section => renderers[section] && renderers[section]())}
-    </div>
-  );
+  return templates[templateId] || templates.classic;
 }
