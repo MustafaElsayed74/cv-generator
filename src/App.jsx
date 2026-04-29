@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import CVForm from './components/CVForm';
 import CVPreview from './components/CVPreview';
 import { Printer, FileText, Upload, Save, Clock, Download, ChevronDown, LayoutTemplate, FilePlus2, ArrowLeft, FileCode2, Shield } from 'lucide-react';
@@ -9,6 +9,7 @@ import * as mammoth from 'mammoth';
 import { SignedIn, SignedOut, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import toast, { Toaster } from 'react-hot-toast';
 import ATSScoreModal from './components/ATSScoreModal';
+import { scoreATS } from './utils/atsScorer';
 import './index.css';
 
 const emptyData = {
@@ -44,6 +45,7 @@ function App() {
   const [cvName, setCvName] = useState('My Resume');
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [localSaveStatus, setLocalSaveStatus] = useState('saved');
   const fileInputRef = useRef(null);
   const customTemplateRef = useRef(null);
   const [showATSModal, setShowATSModal] = useState(false);
@@ -62,8 +64,13 @@ function App() {
     return emptyData;
   });
 
+  const atsReport = useMemo(() => scoreATS(cvData), [cvData]);
+
   useEffect(() => {
+    setLocalSaveStatus('saving');
     localStorage.setItem('cv-data', JSON.stringify(cvData));
+    const timer = setTimeout(() => setLocalSaveStatus('saved'), 800);
+    return () => clearTimeout(timer);
   }, [cvData]);
 
   useEffect(() => {
@@ -388,6 +395,9 @@ function App() {
               <Upload size={18} />
               Import Data
             </label>
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '1rem', fontStyle: 'italic' }}>
+              {localSaveStatus === 'saving' ? 'Saving...' : 'All changes saved'}
+            </div>
             <button className="btn btn-secondary" title="View History" onClick={() => setShowHistory(true)}>
               <Clock size={18} />
             </button>
@@ -395,9 +405,9 @@ function App() {
               <Save size={18} />
               {isSaving ? "..." : ""}
             </button>
-            <button className="btn" title="ATS Score" onClick={() => setShowATSModal(true)} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderColor: 'transparent' }}>
+            <button className="btn" title="ATS Report" onClick={() => setShowATSModal(true)} style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderColor: 'transparent' }}>
               <Shield size={18} />
-              ATS Score
+              ATS: {atsReport.percentage}%
             </button>
             <div style={{ marginLeft: '0.5rem' }}>
               <UserButton afterSignOutUrl="/" />
