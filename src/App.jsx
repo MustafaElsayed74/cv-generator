@@ -6,7 +6,6 @@ import { generateDocx, generateCustomDocx } from './utils/exportDocx';
 import { parseCVText } from './utils/parseCV';
 import { saveCV, getHistory, loadCV } from './utils/blobStorage';
 import * as mammoth from 'mammoth';
-import html2pdf from 'html2pdf.js';
 import { SignedIn, SignedOut, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import toast, { Toaster } from 'react-hot-toast';
 import ATSScoreModal from './components/ATSScoreModal';
@@ -148,21 +147,13 @@ function App() {
   };
 
   const handleExportPDF = () => {
-    const element = document.getElementById('cv-printable');
-    
-    // Temporarily disable CSS zoom so html2pdf captures full resolution A4
-    element.style.zoom = '1';
-    
-    const opt = {
-      margin:       0,
-      filename:     `${cvName.replace(/\s+/g, '_')}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save().then(() => {
-      element.style.zoom = ''; // Restore zoom
+    toast('Select "Save as PDF" in the destination dropdown', {
+      icon: '🖨️',
+      duration: 4000,
     });
+    setTimeout(() => {
+      window.print();
+    }, 500);
     setShowExportMenu(false);
   };
 
